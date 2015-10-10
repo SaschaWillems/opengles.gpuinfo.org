@@ -28,7 +28,7 @@
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span> 
 		  </button>
-		  <a href="#">
+		  <a href="http://opengles.gpuinfo.org">
 			<img src="./images/opengles.png" height="48px">
 		  </a>
 		</div>
@@ -48,6 +48,7 @@
 						
 			<li><a href='./gles_compressedformats.php'>Compr. formats</a></li>
 			<li><a href='./gles_devicefeatures.php'>Device features</a></li>	
+			<li><a href='https://play.google.com/store/apps/details?id=de.saschawillems.glescapsviewer' target='_blank'>Download</a></li>			
 			<li><a href="./gles_about.php">About</a></li> 			
 			
 		  </ul>
