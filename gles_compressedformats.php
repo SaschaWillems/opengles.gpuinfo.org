@@ -24,7 +24,7 @@
 	
 	dbConnect();  
 	
-	$sqlResult = mysql_query("select count(*) from viewCompressedFormats");
+	$sqlResult = mysql_query("select count(distinct(name)) from viewCompressedFormats");
 	$sqlCount = mysql_result($sqlResult, 0);
 	echo "<div class='header'>";
 		echo "<h4 style='margin-left:10px;'>Listing all compressed texture formats ($sqlCount)</h4>";
@@ -36,7 +36,7 @@
 	<table id="extensions" class="table table-striped table-bordered table-hover reporttable" >
 		<?php		
 		
-            $sqlstr = "select name, coverage from viewCompressedFormats";                
+            $sqlstr = "select distinct(name), coverage from viewCompressedFormats where name != '0x0'";                
 			$sqlresult = mysql_query($sqlstr) or die(mysql_error());  
 			
 			echo "<thead><tr>";  
