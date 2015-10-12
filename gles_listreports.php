@@ -40,6 +40,18 @@
 	// Params
 	$groupby = $_GET['groupby'];
 	
+    if ($extension != '')
+        $header = "Listing reports supporting extension <strong>".strtoupper($extension)."</strong>";
+
+    if ($extensionunsupported != '')
+        $header = "Listing reports <font color=red>not</font> supporting extension <strong>".strtoupper($extensionunsupported)."</strong>";        
+
+    if ($devicefeature != '')
+        $header = "Listing reports supporting device feature <strong>".strtoupper($devicefeature)."</strong>";
+    
+    if ($compressedtextureformat != '')
+        $header = "Listing reports supporting format <strong>".strtoupper($compressedtextureformat)."</strong>";
+	
     if ($header == '') 
     {
         $sqlResult = mysql_query("SELECT count(*) FROM reports");
@@ -51,32 +63,6 @@
 		echo "<h4 style='margin-left:10px;'>$header</h4>";
 	echo "</div>";		
 
-	// old 
-	
-	$searchstring  = mysql_real_escape_string(strtolower($_GET['searchstring']));
-
-	$filter =  mysql_real_escape_string(strtolower($_GET['filterfield']));
-
-	$filterstring = '';
-	if (($filter != '') & ($searchstring != '')) {
-		if ($filter == 'devicename') {
-			$filterstring = ' devicename(reports.device) like "%'.$searchstring.'%" ';
-		}		
-		if ($filter == 'renderer') {
-			$filterstring = ' reports.gl_renderer like "%'.$searchstring.'%" ';
-		}		
-		if ($filter == 'gles') {
-			$filterstring = ' reports.esversion_major + "." + reports.esversion_minor = "'.$searchstring.'" ';
-		}		
-		if ($filter == 'glsl') {
-			$filterstring = ' reports.shadinglanguageversion_major + "." + reports.shadinglanguageversion_minor = "'.$searchstring.'" ';
-		}		
-		if ($filter == 'os') {
-			$filterstring = ' reports.os = "'.$searchstring.'" ';
-		}		
-		$like = ' where'.$filterstring.' ';
-	}
-	
     function shorten($string, $length) 
     {
         if (strlen($string) >= $length)
@@ -94,11 +80,10 @@
 <center>
 	<div class="reportdiv">
 
-	<form method="get" action="gl_comparereports.php?compare" style="margin-bottom:0px;">
+	<form method="get" action="gles_comparereports.php?" style="margin-bottom:0px;">
 
 		<table id="reports" class="table table-striped table-bordered table-hover reporttable">
 			<?php
-	if ($groupby == '') {
 
 		$fields = 'reports.id, devicename(reports.device), reports.os, reports.esversion_major, reports.esversion_minor, reports.shadinglanguageversion_major, reports.shadinglanguageversion_minor, date(reports.submissiondate), reports.gl_renderer';   
 
@@ -191,7 +176,6 @@
 		$sqlcount = mysql_num_rows($sqlresult);   
 		$caption = "$sqlcount ".$caption;
 			
-		//echo "<tr><td class='reporttableheader' colspan = 6>$caption</td></tr>";
 		echo "<thead><tr>";
 		echo "	<td class='caption'>Name</td>";
 		echo "	<td class='caption'>GLES</td>";
@@ -202,35 +186,28 @@
 		echo "	<td class='caption' align='center'><input type='submit' value='compare'></td>";   		
 		echo "</tr></thead><tbody>";
 		
-		$index = 0;
-		if ($sqlcount > 0) {
-			while($row = mysql_fetch_row($sqlresult)) {	
-				$bgcolor  = $index % 2 != 0 ? $bgcolordef : $bgcolorodd;
-				echo "<tr style='background-color:$bgcolor;'>";
-				echo "<td class='value'><nobr><a href='gles_generatereport.php?reportID=".$row[0]."'>".shorten($row[1], 35)."</a></nobr></td>";
-				echo "<td class='valuezeroleft'>".$row[3].".".$row[4]."</a></td>";
-				if ($row[5] == 0) {
-					echo "<td class='valuezeroleft'>-</a></td>";
-				} else {
-					echo "<td class='valuezeroleft'>".$row[5].".".$row[6]."</a></td>";
-				}
-				echo "<td class='valuezeroleft'>".shorten($row[8], 20)."</td>";
-				echo "<td class='valuezeroleft'>".$row[2]."</td>";
-				echo "<td class='valuezeroleft'><nobr>".$row[7]."</nobr></td>";
-				echo "<td class='valuezeroleft'><center><input type='checkbox' name='$row[0]' value='1'></center></td>";
-				echo "</tr>"; 
-				$index++;
-			}	  
-		} else {
-			echo "<tr><td colspan=4 class='value'>No reports matching search criteria</td></tr>";
-		}
+		while($row = mysql_fetch_row($sqlresult)) 
+		{	
+			echo "<tr>";
+			echo "<td class='value'><nobr><a href='gles_generatereport.php?reportID=".$row[0]."'>".shorten($row[1], 35)."</a></nobr></td>";
+			echo "<td class='valuezeroleft'>".$row[3].".".$row[4]."</td>";
+			if ($row[5] == 0) 
+			{
+				echo "<td class='valuezeroleft'>-</td>";
+			} else {
+				echo "<td class='valuezeroleft'>".$row[5].".".$row[6]."</td>";
+			}
+			echo "<td class='valuezeroleft'>".shorten($row[8], 20)."</td>";
+			echo "<td class='valuezeroleft'>".$row[2]."</td>";
+			echo "<td class='valuezeroleft'><nobr>".$row[7]."</nobr></td>";
+			echo "<td class='valuezeroleft'><center><input type='checkbox' name='$row[0]' value='1'></center></td>";
+			echo "</tr>"; 
+		}	  
 		
-	}
-
 	echo "</tbody></table>";         	
-	include("./gles_footer.inc");	
-	echo "</div>";
 	echo "</form>";
+	echo "</div>";
+	include("./gles_footer.inc");	
 	
 	dbDisconnect();
     ?>     
@@ -245,7 +222,7 @@
 				"searchHighlight": true,
 				"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 				"orderCellsTop": true,
-				
+
 				initComplete: function () {
 					var api = this.api();
 
