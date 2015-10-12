@@ -56,7 +56,7 @@
 					$vendor = $extparts[0];
 					$link = str_replace($vendor."_", "", $link);						
 					echo "<tr>";						
-					echo "<td class='firstcolumn'><a href='gles_listreports.php?extension=".$extname."'>".$extname."</a> (<a href='gles_listreports.php?extension=".$extname."?invert=1'>not</a>) [<a href='http://www.khronos.org/registry/gles/extensions/$vendor/$link.txt' target='_blank' title='Show specification for this extensions'>?</a>]</td>";
+					echo "<td class='firstcolumn'><a href='gles_listreports.php?extension=".$extname."'>".$extname."</a> (<a href='gles_listreports.php?extensionunsupported=".$extname."'>not</a>) [<a href='http://www.khronos.org/registry/gles/extensions/$vendor/$link.txt' target='_blank' title='Show specification for this extensions'>?</a>]</td>";
 					echo "<td class='firstcolumn' align=center>".round(($row[1]), 2)."%</td>";
 					echo "</tr>";	    
 					$index++;
