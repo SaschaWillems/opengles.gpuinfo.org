@@ -1,4 +1,12 @@
- <?php
+ 	<script>
+		function showDiffOnly() {
+			$('.same').toggle()
+		}
+		function toggleDiffCaps() {
+			$('.sameCaps').toggle()
+		}	
+	</script>
+<?php
      /*
 		*
 		* OpenGL ES hardware capability database server implementation
@@ -40,7 +48,10 @@
 			$reportlimit = true;	 
 			break; 
 		}
-	}   	
+	}   
+	
+	if ($reportlimit) {echo "<b>Note : </b>You selected more than 8 reports to compare, only displaying 8 reports.\n"; }	
+	sort($reportids, SORT_NUMERIC);
 
 	// Get device names
 	$repids = implode(",", $reportids);   
@@ -79,12 +90,12 @@
 		// Generate table from array
 		$rowindex = 0;
 		for ($i = 0, $arrsize = sizeof($column[0]); $i < $arrsize; ++$i) { 	  
-			echo "<tr>\n";
+			echo "<tr>";
 			echo "<td class='fieldcaption'>".$captions[$i]."</td>\n";
 			for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) {	 
 				echo "<td class='value'>".$column[$j][$i]."</td>";
 			} 
-			echo "</tr>\n";
+			echo "</tr>";
 			$rowindex++;
 		}   
 			
@@ -115,12 +126,44 @@
 		for ($i = 0, $arrsize = sizeof($column[0]); $i < $arrsize; ++$i) { 	  
 			if ($captions[$i] != 'REPORTID') 
 			{
-				echo "<tr>";
-				echo "<td class='fieldcaption'>".$captions[$i]."</td>\n";
-				for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) {	 
-					echo "<td class='value'>".number_format($column[$j][$i], 0, '.', ',')."</td>";
+				$className = 'same';
+				// Get extremes
+				if (is_numeric($column[0][$i])) 
+				{
+					$minval = $column[0][$i];
+					$maxval = $column[0][$i];					
+					for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) 
+					{	 			
+						if ($column[$j][$i] < $minval) 
+						{
+							$minval = $column[$j][$i];
+						}
+						if ($column[$j][$i] > $maxval) 
+						{
+							$maxval = $column[$j][$i];
+						}
+					}
+				}		
+				if ($minval < $maxval) 
+				{
+					$className = 'diff';
+				}
+			
+				echo "<tr class='$className'>";
+				echo "<td class='fieldcaption'>".$captions[$i]."</td>";
+				for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) 
+				{	 				
+					$valClassName = ($className == 'diff') ? "maxvalue" : "";
+					if (is_numeric($column[$j][$i])) 
+					{
+						if ($column[$j][$i] < $maxval) 
+						{
+							$valClassName = "lowervalue";
+						}
+					}						
+					echo "<td class='value $valClassName'>".number_format($column[$j][$i], 0, '.', ',')."</td>";
 				} 
-				echo "</tr>\n";
+				echo "</tr>";
 			}
 			$rowindex++;
 		}   
@@ -200,15 +243,17 @@
 		
 		// Generate table
 		$arrcount = count($extcaption);
-		if ($arrcount > 0) {
+		if ($arrcount > 0) 
+			{
 			$colspan = count($reportids) + 1;	
 			$rowindex = 0;
-			foreach ($extcaption as $extension){
-			
+			foreach ($extcaption as $extension)
+				{			
 				// Check if missing it at least one report
 				$missing = false;
 				$index = 0;
-				foreach ($reportids as $repid) {
+				foreach ($reportids as $repid) 
+				{
 					if (!in_array($extension, $extarray[$index])) 
 					{ 
 						$missing = true;
@@ -216,17 +261,27 @@
 					$index++;
 				}  			
 
-				$add = 'color:#000000;';
-				if ($missing) {
-					$add = 'color:#FF0000;';
-				}				
-		
-				echo "<tr style='background-color:$add'><td class='fieldcaption' color=$000000;>$extension</td>\n";		 
+				$color = ($missing) ? '#FF0000' : '#000000';		
+				$className = "same";
 				$index = 0;
-				foreach ($reportids as $repid) {
-					if (in_array($extension, $extarray[$index])) { 
+				foreach ($reportids as $repid) 
+				{
+					if (!in_array($extension, $extarray[$index])) 
+					{ 
+						$className = "diff";
+					}
+					$index++;
+				}				
+				$index = 0;
+				echo "<tr class='$className'><td class='fieldcaption'>$extension</td>";		 
+				foreach ($reportids as $repid) 
+				{
+					if (in_array($extension, $extarray[$index])) 
+					{ 
 						echo "<td class='value' style='margin-left:10px;'><img src='icon_check.png'/ width=16px></td>";
-					} else {
+					} 
+					else 
+					{
 						echo "<td class='value' style='margin-left:10px;'><img src='icon_missing.png'/ width=16px></td>";
 					}	
 					$index++;
@@ -234,15 +289,14 @@
 				$rowindex++;
 			echo "</tr>\n"; 	
 			}
-		} else {
-			echo "<tr><td class='fieldcaption' colspan=$colspan>None</td></tr>\n";		 
 		}
 	
 	}
             
     echo "<center>";
-	echo "<div id='content'>";	
-    
+	
+	//echo "<div>";	
+	
     echo "<div id='tabs' style='font-size:12px;'>";
     echo "<ul class='nav nav-tabs'>";
     echo "	<li class='active'><a data-toggle='tab' href='#tabs-implementation'>Implementation</a></li>";
@@ -250,32 +304,16 @@
     echo "	<li><a data-toggle='tab' href='#tabs-egl-ext'>EGL Extensions</a></li>";
     echo "	<li><a data-toggle='tab' href='#tabs-compressed-formats'>Compr. Formats</a></li>";
     echo "	<li><a data-toggle='tab' href='#tabs-shader-formats'>Shader Formats</a></li>";
-    echo "</ul>";	    
-	
-	
-		if ($reportlimit) {echo "<b>Note : </b>You selected more than 8 reports to compare, only displaying 8 reports.\n"; }	
-
-		sort($reportids, SORT_NUMERIC);
-
-		// Header
-		$colspan = count($reportids) + 1;	
-        // Implementation and capabilities
-        //echo "<div id='tabs-1'>";        
-		//echo "<table border=0>";		
-		//echo "<TR> <TD class='reporttableheader' colspan=$colspan>Comparing devices</TD></TR>\n";
-
-		/*
-		// Gather data into array								 
-							 
-		*/
-		//echo "</table>";
-		
-    //echo "</tbody></table>";      
-    //echo "</div>";    
+    echo "</ul>";	    	
 	
     // Implementation
-    echo "<div id='tabs-implementation'>";    
-	echo "	<table id='implementation' class='table table-striped table-bordered reporttable'>";    	
+
+	echo "<div style='padding-top:5px;'>";
+	echo "<button onclick='showDiffOnly();' class='btn btn-primary'>Toggle all / diff only</button>";				
+	echo "</div>";
+	
+    echo "<div id='tabs-implementation' class='reporttable'>";    
+	echo "	<table id='implementation' class='table table-striped table-bordered table-hover reporttable'>";    	
 	echo "  <thead><tr><td></td>";
 	for ($i = 0; $i < sizeof($devicenames); $i++) 
 	{
@@ -292,55 +330,62 @@
 	echo "</div>";
 	
 	// Extensions
-    echo "<div id='tabs-es-ext'>";    
-	echo "	<table id='extensions' class='table table-striped table-bordered reporttable'>";    		
+	echo "<table class='reporttable'><tr><td>"; 	
+    echo "<div id='tabs-es-ext' class='reporttable'>";    
+	echo "	<table id='extensions' class='table table-striped table-bordered table-hover reporttable'>";    		
     generate_extension_table(
 		$reportids,
         "select DISTINCT name from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid IN (" . $repids . ")",
         "select name from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid");	
     echo "</tbody></table>";
 	echo "</div>";
+	echo "</td></tr></table>"; 		
 	
     // EGL Extensions
+	echo "<table class='reporttable'><tr><td>"; 	
     echo "<div id='tabs-egl-ext'>";    
-	echo "	<table id='extensionsegl' class='table table-striped table-bordered reporttable'>";    		
+	echo "	<table id='extensionsegl' class='table table-striped table-bordered table-hover reporttable'>";    		
 	generate_extension_table(
 		$reportids,
 		"select DISTINCT name from reports_eglextensions rext join egl_extensions ext on rext.id = ext.id where rext.reportid IN (" . $repids . ")",
 		"select name from reports_eglextensions rext join egl_extensions ext on rext.id = ext.id where rext.reportid");									 
     echo "	</tbody></table>";
 	echo "</div>";
+	echo "</td></tr></table>"; 		
 	
 	// Compressed texture formats
+	echo "<table class='reporttable'><tr><td>"; 	
     echo "<div id='tabs-compressed-formats'>";    
-	echo "	<table id='compressedformats' class='table table-striped table-bordered reporttable'>";    		
+	echo "	<table id='compressedformats' class='table table-striped table-bordered table-hover reporttable'>";    		
 		generate_extension_table(
 			$reportids,
 			"select DISTINCT name from reports_compressedformats rcr join compressedformats cr on rcr.compressedformatid = cr.id where rcr.reportid IN (" . $repids . ")",
 			"select name from reports_compressedformats rcf join compressedformats cf on rcf.compressedformatid = cf.id where rcf.reportid");	
     echo "	</tbody></table>";
 	echo "</div>";		
+	echo "</td></tr></table>"; 		
 
 	// Shader formats
+	echo "<table class='reporttable'><tr><td>"; 	
     echo "<div id='tabs-shader-formats'>";    
 	// Binary shader formats
-	echo "	<table id='shaderformats' class='table table-striped table-bordered reporttable'>";    		
+	echo "	<table id='shaderformats' class='table table-striped table-bordered table-hover reporttable'>";    		
 	generate_extension_table(
 		$reportids,
 		"select DISTINCT name from reports_binaryshaderformats bsf join binaryshaderformats bf on bsf.BINARYSHADERFORMATID = bf.ID where bsf.reportid IN (" . $repids . ")",
 		"select name from reports_binaryshaderformats bsf join binaryshaderformats bf on bsf.BINARYSHADERFORMATID = bf.id where bsf.reportid");								
     echo "	</tbody></table>";
-	
+
 	// Binary program formats
-	echo "	<table id='programformats' class='table table-striped table-bordered reporttable'>";    		
+	echo "	<table id='programformats' class='table table-striped table-bordered table-hover reporttable'>";    		
 	generate_extension_table($reportids,
 							 "select DISTINCT name from reports_binaryprogramformats bpf join binaryprogramformats bp on bpf.ID = bp.ID where bpf.reportid IN (" . $repids . ")",
 							 "select name from reports_binaryprogramformats bpf join binaryprogramformats bp on bpf.ID = bp.ID where bpf.reportid");							 								 
-    echo "	</tbody></table>";
-	
-	echo "</div>";			
-	
+    echo "	</tbody></table>";	
+	echo "</td></tr></table>";
+	echo "</div>";				
 	echo "</center>";
+	
 	include("./gles_footer.inc");
 	?>     
 	       
@@ -351,10 +396,10 @@
 	        for (var i=0; i < tableNames.length; i++) 
             {           
                 $(tableNames[i]).DataTable({
-                    "pageLength" : -1,
+					"paging" : false,
                     "order": [], 
                     "searchHighlight": true,
-                    "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
+//					"dom":' <"search"f><"top"l>rt<"bottom"ip><"clear">'
                 });
             }
 		} );	

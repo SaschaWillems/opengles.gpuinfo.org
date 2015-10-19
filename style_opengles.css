@@ -5,6 +5,18 @@ body {
  background: #EEEEEE;
  }
  
+ .diff {
+	color:#FF0000;
+ }
+ 
+ .maxvalue {
+	color:#00CC00;
+ }
+ 
+ .lowervalue {
+	color:#FF0000;
+}
+ 
  .reportdiv {
 	width:85%;
 	padding-top:10px;
@@ -13,6 +25,7 @@ body {
 
 .reporttable {
 	width:auto;
+	margin-top:15px;
 }
 
 .nav-tabs > li, .nav-pills > li {
@@ -24,6 +37,12 @@ body {
 
 .nav-tabs, .nav-pills {
     text-align:center;
+}
+
+#implementation_filter {
+  width: 256px;
+  margin-left: auto ;
+  margin-right: auto ;
 }
 
 .header {
@@ -69,14 +88,6 @@ body {
 .reportrowb
 {
  font-size: 12px;
-}
-
-.reporttabelheader
-{
- background-color: #000000;
- color: #FFFFFF;
- padding: 5px;
- font-weight:bold;
 }
 
 a:link {  text-decoration:none !important; }
