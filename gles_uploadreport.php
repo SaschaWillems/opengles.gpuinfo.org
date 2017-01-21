@@ -54,7 +54,7 @@
 	
 	// Upload files
 	if (!move_uploaded_file($_FILES['data']['tmp_name'], $path.$_FILES['data']['name'])) {
-		mail('webmaster@delphigl.de', 'Error glESCapsViewer report upload', $path.$_FILES['data']['name']); 			
+		mail($mailto, 'Error glESCapsViewer report upload', $path.$_FILES['data']['name']); 			
 		die('');
 	}; 
 
@@ -72,7 +72,7 @@
 	$res = explode("|", $sqlrow[0]);
 	
 	if ($res[0] == "duplicate") {
-		mail('webmaster@delphigl.de', 'glESCapsViewer duplicate', "Duplicate report submitted :\nDevice = $res[1]\nIP = $IP"); 	
+		mail($mailto, 'Duplicate report for '.$res[1], "Duplicate report submitted :\nDevice = $res[1]\nIP = $IP"); 	
 		header('HTTP/1.0 200 res_duplicate');
 		die('');
 	}		
@@ -81,7 +81,7 @@
 		
     if (!$sqlresult) {
 		$error = mysql_error();
-		mail('webmaster@delphigl.de', 'glESCapsViewer error', "An uploaded report raised a mysql error :\nError = $error\nIP = $IP\nXML = $xmlstring"); 	
+		mail($mailto, 'glESCapsViewer error', "An uploaded report raised a mysql error :\nError = $error\nIP = $IP\nXML = $xmlstring"); 	
 		header('HTTP/1.0 404 Error while saving report to database!');
 		die('');
 	};	
@@ -91,13 +91,24 @@
 
 	$sqlrow = mysql_fetch_assoc($sqlresult);
 	$reportID = $sqlrow["ReportID"];	
-	
-	$msg = "New report added to the database : http://delphigl.de/glcapsviewer/gles_generatereport.php?reportID=$reportID \n";	
-	$msgtitle = "New glESCapsViewer report uploaded";
-	
-	mail($mailto, $msgtitle, $msg); 	
 
 	header('HTTP/1.0 200 res_uploaded');	
+
+	$sqlresult = mysql_query("select device, GL_RENDERER, GL_VERSION, os, cpuarch, submitter from reports where id = ".$reportID) or die('');
+	$reportDetails = mysql_fetch_row($sqlresult);
+
+	$msgtitle = "New OpenGL ES report for ".$reportDetails[0]." (".$reportDetails[1].")";
+
+	$msg = "New OpenGL ES hardware report uploaded to the database\n\n";
+	$msg .= "Link : http://opengles.gpuinfo.org/gles_generatereport.php?reportID=$reportID \n";	
+	$msg .= "Devicename = ".$reportDetails[0]."\n";
+	$msg .= "Renderer = ".$reportDetails[1]."\n";
+	$msg .= "Version = ".$reportDetails[2]."\n";
+	$msg .= "Android = ".$reportDetails[3]."\n";
+	$msg .= "Architecture = ".$reportDetails[4]."\n";
+	$msg .= "Submitter = ".$reportDetails[5]."\n";
+	
+	mail($mailto, $msgtitle, $msg); 	
 
 	dbDisconnect();	 
 ?>
