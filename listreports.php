@@ -19,7 +19,7 @@
 		*
 	*/ 
  
-	include './header.inc';
+	include 'header.html';
 
 	$negate = false;
     $searchType = '';
@@ -89,7 +89,7 @@
 
 	<center>
 	<div class="tablediv">
-		<form method="get" action="gles_comparereports.php?">
+		<form method="get" action="compare.php?">
 			<table id="reports" class="table table-striped table-bordered table-hover reporttable" style="width:auto">
 				<?php
 					if (!$defaultHeader) {
@@ -193,7 +193,7 @@
 
 		});
 	</script>
-	<?php include("./gles_footer.inc");	?>
+	<?php include "footer.html"; ?>
 	</center>	
 </body>
 </html>

@@ -100,7 +100,7 @@
     if (isset($_REQUEST['filter']['compressedtextureformat'])) {
 	    $compressedformat = $_REQUEST['filter']['compressedtextureformat'];
         if ($compressedformat != '') {
-            $whereClause = "where id ".($negate ? "not" : "")." in (select distinct(reportid) from reports_compressedformats rcf join compressedformats cf on cf.id = rcf.compressedformatid where cf.name = :filter_compressedformat)";
+            $whereClause = "where id ".($negate ? "not" : "")." in (select distinct(reportid) from reports_compressedformats rcf join compressedformats cf on cf.id = rcf.compressedformatid where cf.name = :filter_compressedformat or cf.displayname = :filter_compressedformat)";
             $params['filter_compressedformat'] = $compressedformat;            
         }
     }   
@@ -148,7 +148,7 @@
         foreach ($devices as $device) {            							
             $data[] = array(
                 'id' => $device["id"], 
-                'name' => '<a href="gles_generatereport.php?reportID='.$device["id"].'">'.shorten($device["name"], 35).'</a>',
+                'name' => '<a href="displayreport.php?id='.$device["id"].'">'.shorten($device["name"], 35).'</a>',
                 'glesversion' => $device["glesversion"],
                 'slversion' => $device["slversion"],
                 'renderer' => shorten($device["renderer"], 24),
