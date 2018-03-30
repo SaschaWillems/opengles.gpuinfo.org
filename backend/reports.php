@@ -46,11 +46,11 @@
 
     // Filtering
     $searchColumns = array(
-        'id', 
+        'id',
         'devicename(reports.device)', 
         'concat(reports.esversion_major, ".", reports.esversion_minor)', 
         'concat(reports.shadinglanguageversion_major, ".", reports.shadinglanguageversion_minor)', 
-        'renderer', 
+        'gl_renderer', 
         'os', 
         'date(reports.submissiondate)');
 
@@ -61,7 +61,7 @@
         if (($column['searchable'] == 'true') && ($column['search']['value'] != '')) {
             $filters[] = $searchColumns[$i].' like :filter_'.$i;
             $params['filter_'.$i] = $column['search']['value'].'%';
-            if (($i == 1) || ($i == 3)) {
+            if (($i == 1) || ($i == 4)) {
                 $params['filter_'.$i] = '%'.$params['filter_'.$i];
             }
         }
