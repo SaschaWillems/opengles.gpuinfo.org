@@ -222,7 +222,7 @@
 				<tbody>
 					<?php
 						// Device info	
-						generate_table("SELECT devicename(device) as device, os, screenwidth, screenheight, cpucores, cpuspeed, cpuarch, submissiondate, submitter FROM reports WHERE ID = $reportID");
+						generate_table("SELECT devicename(device) as Device, os as `Android version`, screenwidth as `Screen width`, screenheight as `Screen height`, cpucores as `CPU cores`, cpuspeed as `CPU speed (MHz)`, cpuarch as `CPU architecture`, submissiondate as `Submitted at`, submitter as `Submitted by` FROM reports WHERE ID = $reportID");
 						// ES renderer
 						echo "<tr><td><b>OpenGL ES renderer</b></td><td></td></tr>";   
 						generate_table("SELECT GL_VENDOR, GL_RENDERER, GL_VERSION, GL_SHADING_LANGUAGE_VERSION FROM reports WHERE ID = $reportID");

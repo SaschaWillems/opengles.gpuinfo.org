@@ -278,11 +278,11 @@
 				{
 					if (in_array($extension, $extarray[$index])) 
 					{ 
-						echo "<td class='value' style='margin-left:10px;'><img src='icon_check.png'/ width=16px></td>";
+						echo "<td class='value' style='margin-left:10px;'><span class='glyphicon glyphicon-ok supported'></td>";
 					} 
 					else 
-					{
-						echo "<td class='value' style='margin-left:10px;'><img src='icon_missing.png'/ width=16px></td>";
+					{	
+						echo "<td class='value' style='margin-left:10px;'><span class='glyphicon glyphicon-remove unsupported'></td>";
 					}	
 					$index++;
 				}  
@@ -312,17 +312,17 @@
 		<table id='implementation' width='100%' class='table table-striped table-bordered table-hover'>
 			<thead>
 				<tr>
-					<th></th>
+					<th>Capability</th>
 					<?php	
-					for ($i = 0; $i < sizeof($devicenames); $i++) {
-						echo "<th>".$devicenames[$i]."</th>";
-					}
+						for ($i = 0; $i < sizeof($devicenames); $i++) {
+							echo "<th>".$devicenames[$i]."</th>";
+						}
 					?>
 				</tr>
 			</thead>
 			<tbody>				
 				<!-- Basic device information -->
-				<?php generate_table("SELECT os, screenwidth, screenheight, cpucores, cpuspeed, cpuarch, submissiondate, submitter FROM reports WHERE ID IN (" . $repids . ")");  ?>
+				<?php generate_table("SELECT os as `Android version`, screenwidth as `Screen width`, screenheight as `Screen height`, cpucores as `CPU cores`, cpuspeed as `CPU speed (MHz)`, cpuarch as `CPU architecture`, submissiondate as `Submitted at`, submitter as `Submitted by` FROM reports WHERE ID IN (" . $repids . ")");  ?>
 				<!-- OpenGL ES info -->
 				<?php generate_table("SELECT GL_VENDOR, GL_RENDERER, GL_VERSION, GL_SHADING_LANGUAGE_VERSION FROM reports WHERE ID IN (" . $repids . ")"); ?>
 				<!-- OpenGL ES caps -->
