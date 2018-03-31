@@ -244,7 +244,7 @@
 						// ES 3.0 capabilities
 						echo "<tr class='group'><td>OpenGL ES 3.0 capabilities</td><td></td></tr>";   
 						if ($esversion >= 3) {
-							generate_caps_table("SELECT * from reports_es20caps where ReportID = $reportID", 3);
+							generate_caps_table("SELECT * from reports_es30caps where ReportID = $reportID", 3);
 						} else {
 							echo "<tr><td class='firstcolumn' style='color:#FF0000;'>not supported</td><td></td></tr>";
 						}       
