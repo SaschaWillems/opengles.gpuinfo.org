@@ -24,8 +24,11 @@
 	
 	dbConnect();  
 	
-	$sqlResult = mysql_query("select count(*) from viewEGLExtensions");
+	$sqlResult = mysql_query("SELECT count(*) from viewEGLExtensions");
 	$sqlCount = mysql_result($sqlResult, 0);
+
+	$sqlResult = mysql_query("SELECT count(*) FROM reports") or die();
+	$reportcount = mysql_result($sqlResult, 0);
 ?>
 
 	<script>
@@ -59,7 +62,7 @@
 					</thead>
 					<tbody>				
 						<?php					
-							$sqlstr = "select name, coverage from viewEGLExtensions";                
+							$sqlstr = "select name, reports from viewEGLExtensions";                
 							$sqlresult = mysql_query($sqlstr) or die(mysql_error());  
 							
 							while ($row = mysql_fetch_row($sqlresult))
@@ -69,7 +72,7 @@
 								{			
 									echo "<tr>";						
 									echo "<td class='firstcolumn'><a href='listreports.php?eglextension=".$extname."'>".$extname."</a> (<a href='listreports.php?eglextension=".$extname."&option=not'>not</a>)</td>";
-									echo "<td class='firstcolumn' align=center>".round(($row[1]), 2)."%</td>";
+									echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportcount * 100.0), 2)."%</td>";
 									echo "</tr>";	    
 									$index++;
 								}

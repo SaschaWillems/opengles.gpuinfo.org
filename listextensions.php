@@ -24,8 +24,11 @@
 	
 	dbConnect();  
 	
-	$sqlResult = mysql_query("select count(*) from viewExtensions");
+	$sqlResult = mysql_query("SELECT count(*) from viewExtensions");
 	$sqlCount = mysql_result($sqlResult, 0);
+
+	$sqlResult = mysql_query("SELECT count(*) FROM reports") or die();
+	$reportcount = mysql_result($sqlResult, 0);	
 ?>
 
 	<script>
@@ -59,7 +62,7 @@
 					</thead>
 					<tbody>				
 						<?php					
-							$sqlstr = "select name, coverage from viewExtensions";                
+							$sqlstr = "select name, reports from viewExtensions";                
 							$sqlresult = mysql_query($sqlstr) or die(mysql_error());  
 							
 							while ($row = mysql_fetch_row($sqlresult))
@@ -73,7 +76,7 @@
 									$link = str_replace($vendor."_", "", $link);						
 									echo "<tr>";						
 									echo "<td class='firstcolumn'><a href='listreports.php?extension=".$extname."'>".$extname."</a> (<a href='listreports.php?extension=".$extname."&option=not'>not</a>) [<a href='http://www.khronos.org/registry/gles/extensions/$vendor/$link.txt' target='_blank' title='Show specification for this extensions'>?</a>]</td>";
-									echo "<td class='firstcolumn' align=center>".round(($row[1]), 2)."%</td>";
+									echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportcount * 100.0), 2)."%</td>";
 									echo "</tr>";	    
 									$index++;
 								}
