@@ -176,7 +176,21 @@
     $sqlresult = mysql_query("SELECT description, devicename(device) as device, GL_VERSION, esversion_major, id FROM reports WHERE ID = $reportID");
     $row = mysql_fetch_array($sqlresult);
     $sqlcount = mysql_num_rows($sqlresult);   
-    $esversion = $row['esversion_major'];    
+	$esversion = $row['esversion_major'];    
+	
+	if ($sqlcount == 0) {
+		echo "<center>";
+		?>
+			<div class="alert alert-danger error">
+			<strong>This is not the <strike>droid</strike> report you are looking for!</strong><br><br>
+			Could not find report with ID <?php echo $reportID ?> in database.<br>
+			It may have been removed due to faulty data.
+			</div>				
+		<?php
+		include "footer.html";
+		echo "</center>";
+		die();			
+	}	
     
 	$sensorCount = getCount("select count(*) from reports_sensors where ReportID = $reportID");       
     $extCount = getCount("select count(*) from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid = $reportID");
