@@ -47,7 +47,7 @@
 		$rowindex = 0;
 		for ($i = 0, $arrsize = sizeof($column[0]); $i < $arrsize; ++$i) { 	  
 			echo "<tr>\n";
-			echo "<td class='firstcolumn'>".$captions[$i]."</td>\n";			
+			echo "<td class='subkey'>".$captions[$i]."</td>\n";			
 			for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) {	 
 				if ($captions[$i] == "submitter") {
 					echo "<td class='valuezeroleftdark'><a href='.\listreports.php?submitter=".$column[$j][$i]."'>".$column[$j][$i]."</a></td>";
@@ -110,9 +110,7 @@
 		}
 	}
 	
-	function generate_caps_table($sql, $esversion) {	
-	
-
+	function generate_caps_table($sql, $esversion) {		
 		$sqlresult = mysql_query($sql);	
 		$column    = array();
 		$captions  = array();
@@ -135,7 +133,7 @@
 		for ($i = 0, $arrsize = sizeof($column[0]); $i < $arrsize; ++$i) { 	  
 			if ($captions[$i] != 'REPORTID') {
 				echo "<tr>\n";
-				echo "<td class='firstcolumn'>".$captions[$i]."</td>\n";
+				echo "<td class='subkey'>".$captions[$i]."</td>\n";
 				for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) {	 
 					echo "<td class='valuezeroleftdark'>".number_format($column[$j][$i], 0, '.', ',')."</td>";
 				} 
@@ -215,26 +213,28 @@
 			<table id='implementation' class='table table-striped table-bordered table-hover responsive' style='width:100%;'>
 				<thead>
 					<tr>
-						<th>Capability</th>
+						<th>Property</th>
 						<th>Value</th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php
 						// Device info	
+						echo "<tr class='group'><td>Device</td><td></td></tr>";   
 						generate_table("SELECT devicename(device) as Device, os as `Android version`, screenwidth as `Screen width`, screenheight as `Screen height`, cpucores as `CPU cores`, cpuspeed as `CPU speed (MHz)`, cpuarch as `CPU architecture`, submissiondate as `Submitted at`, submitter as `Submitted by` FROM reports WHERE ID = $reportID");
+
 						// ES renderer
-						echo "<tr><td><b>OpenGL ES renderer</b></td><td></td></tr>";   
+						echo "<tr class='group'><td>OpenGL ES renderer</td><td></td></tr>";   
 						generate_table("SELECT GL_VENDOR, GL_RENDERER, GL_VERSION, GL_SHADING_LANGUAGE_VERSION FROM reports WHERE ID = $reportID");
 						
 						// EGL implementation
-						echo "<tr><td><b>EGL implementation</b></td><td></td></tr>";   
+						echo "<tr class='group'><td>EGL implementation</td><td></td></tr>";   
 						generate_table("SELECT EGL_VENDOR, EGL_VERSION,
 							(select GROUP_CONCAT(name) from reports_eglclientapis Tlookup join egl_clientapis Tjoin on Tlookup.ID = Tjoin.id where Tlookup.reportid = $reportID) as 'Client APIs'
 							FROM reports WHERE ID = $reportID");
 							
 						// ES 2.0 capabilities
-						echo "<tr><td><b>OpenGL ES 2.0 capabilities</b></td><td></td></tr>";   
+						echo "<tr class='group'><td>OpenGL ES 2.0 capabilities</td><td></td></tr>";   
 						if ($esversion >= 2) {
 							generate_caps_table("SELECT * from reports_es20caps where ReportID = $reportID", 2);
 						} else {
@@ -242,7 +242,7 @@
 						}
 
 						// ES 3.0 capabilities
-						echo "<tr><td><b>OpenGL ES 3.0 capabilities</b></td><td></td></tr>";   
+						echo "<tr class='group'><td>OpenGL ES 3.0 capabilities</td><td></td></tr>";   
 						if ($esversion >= 3) {
 							generate_caps_table("SELECT * from reports_es20caps where ReportID = $reportID", 3);
 						} else {
