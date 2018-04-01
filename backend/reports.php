@@ -123,6 +123,23 @@
         }
     }
 
+    // Capability
+    if (($_REQUEST['filter']['capability'] != '') && ($_REQUEST['filter']['capabilityesversion'] != '') && ($_REQUEST['filter']['capabilityvalue'] != '')) {
+        $tablename = 'reports_es20caps';
+        if ($_REQUEST['filter']['capabilityesversion'] == "3") {
+            $tablename = 'reports_es30caps';
+        }            
+        $columnname = $_REQUEST['filter']['capability'];
+		// Check if capability column exists
+		$result = DB::$connection->prepare("SELECT * from information_schema.columns where TABLE_NAME= :tablename and column_name = :columnname");
+		$result->execute([":columnname" => $columnname, ":tablename" => $tablename]);
+        if ($result->rowCount() == 0) {
+            die("Invalid capability");
+        }                
+        $whereClause = "where reports.id in (select reportid from $tablename where $columnname = :filter_capability_value)";
+        $params['filter_capability_value'] = $_REQUEST['filter']['capabilityvalue'];
+    }    
+
     if (!empty($orderByColumn)) {
         $orderBy = "order by ".$orderByColumn." ".$orderByDir;
     }

@@ -78,8 +78,19 @@
 		$defaultHeader = false;
 		$headerClass = "header-blue";
 		$caption = "Reports submitted by <b>".$filter["submitter"]."</b>";	
-    }
+	}
 	
+	$filter["capability"] = null;
+    if (($_GET['capability'] != '') && ($_GET['esversion'] != '') && ($_GET['value'] != '')) {
+		$filter["capability"] = $_GET['capability'];
+		$filter["capabilityesversion"] = $_GET['esversion'];
+		$filter["capabilityvalue"] = $_GET['value'];
+		$defaultHeader = false;
+		$headerClass = "header-info";
+		$link = "displaycapability.php?name=".$filter["capability"]."&esversion=".$filter["capabilityesversion"];
+		$caption = "Reports with <a href=".$link.">".$filter["capability"]."</a> (OpenGL ES.".$filter["capabilityesversion"].".0) = ".$filter["capabilityvalue"];	
+	}
+
 	if ($defaultHeader) {
 		echo "<div class='header'>";	
 		echo "	<h4>Listing reports</h4>";
@@ -150,7 +161,10 @@
 							'eglextension' : '<?php echo $filter["eglextension"] ?>',
 							'compressedtextureformat': '<?php echo $filter["compressedtextureformat"] ?>',
 							'devicefeature': '<?php echo $filter["devicefeature"] ?>',
-							'submitter': '<?php echo $filter["submitter"] ?>'
+							'submitter': '<?php echo $filter["submitter"] ?>',
+							'capability': '<?php echo $filter["capability"] ?>',
+							'capabilityesversion': '<?php echo $filter["capabilityesversion"] ?>',
+							'capabilityvalue': '<?php echo $filter["capabilityvalue"] ?>',
 						}
 					},
 					error: function (xhr, error, thrown) {
