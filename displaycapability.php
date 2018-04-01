@@ -70,7 +70,7 @@
 	</script>
 
 	<div class='header'>
-		<h4 class='headercaption'>Value distribution for <?php echo $name ?></h4>
+		<h4 class='headercaption'>Value distribution for <?php echo $name ?> (OpenGL ES <?php echo $esversion ?>.0)</h4>
 	</div>
 
 	<center>	
