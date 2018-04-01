@@ -23,16 +23,16 @@
 	include 'dbconfig.php';	
 	
 	$name = null;
-	$esversion = null;
+	$esversion = 2;
 	if (isset($_GET['name'])) {
 		$name = $_GET['name'];
 	}
-	if (isset($_GET['es'])) {
-		$esversion = $_GET['es'];
+	if (isset($_GET['esversion'])) {
+		$esversion = $_GET['esversion'];
 	}
 	$tablename = "reports_es20caps";
-	if ($esversion === "3") {
-		$tablename = "reports_es30caps";								
+	if ($esversion == "3") {
+		$tablename = "reports_es30caps";
 	}														
 
 	// Check if capability as valid and part of the selected table
@@ -52,8 +52,9 @@
 		echo "</center>";
 		die();		
 	}
-?>
 
+?>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>	
 	<script>
 		$(document).ready(function() {
 			var table = $('#extensions').DataTable({
@@ -69,13 +70,13 @@
 	</script>
 
 	<div class='header'>
-		<h4 style='margin-left:10px;'>Capability summary <?php echo $name ?></h4>
+		<h4 class='headercaption'>Value distribution for <?php echo $name ?></h4>
 	</div>
 
 	<center>	
 		<div class='parentdiv'>
+			<div id="chart"></div>
 			<div class='tablediv' style='width:auto; display: inline-block;'>	
-
 				<table id="extensions" class="table table-striped table-bordered table-hover reporttable" >
 					<thead>
 						<tr>				
@@ -91,9 +92,10 @@
 							$result->execute();
 							$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 							foreach ($rows as $cap) {
+								$link ="listreports.php?capability=$name&esversion=".$esversion."&value=".$cap["value"];
 								echo "<tr>";						
 								echo "<td>".$cap["value"]."</td>";
-								echo "<td>".$cap["reports"]."</td>";
+								echo "<td><a href='$link'>".$cap["reports"]."</a></td>";
 								echo "</tr>";	    
 							}     
 							DB::disconnect();       			
@@ -105,6 +107,39 @@
 		</div>
 	</center>
 	
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+		var data = google.visualization.arrayToDataTable([
+			['Value', 'Reports'],
+			<?php 
+				DB::connect();			
+				// TODO: Check if name is valid column name (security!)
+				$result = DB::$connection->prepare("SELECT $name as value, count(0) as reports from $tablename where $name > 0 group by 1 order by 2 desc");
+				$result->execute();
+				$rows = $result->fetchAll(PDO::FETCH_ASSOC);
+				foreach ($rows as $row) {
+					echo "['".$row['value']."',".$row['reports']."],";
+				}     
+				DB::disconnect();
+			?>		
+		]);
+
+        var options = {
+			legend: { position: 'bottom' },
+			chartArea: { width:"80%", height:"80%" },
+			height: 500,
+			width: 500		  
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('chart'));
+
+        chart.draw(data, options);
+	  }
+	</script>
+
 	<?php 
 		include "footer.html";
 	?>

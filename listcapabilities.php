@@ -61,7 +61,7 @@
 	</script>
 
 	<div class='header'>
-		<h4 style='margin-left:10px;'>Listing all available GLES capabilities</h4>
+		<h4>Listing all available GLES capabilities</h4>
 	</div>
 
 	<center>	
@@ -84,7 +84,7 @@
 								$sqlResult = mysql_query("SELECT count(*) FROM reports_es20caps WHERE `$row[0]` != 0") or die(mysql_error());  	
 								$sqlCount = mysql_result($sqlResult, 0);												
 								echo "<tr>";						
-								echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&es=2'>$row[0]</a></td>";
+								echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=2'>$row[0]</a></td>";
 								echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
 								echo "<td align='center'>OpenGL ES 2.0</td>";
 								echo "</tr>";	    
@@ -97,7 +97,7 @@
 								$sqlResult = mysql_query("SELECT count(*) FROM reports_es30caps WHERE `$row[0]` != 0") or die(mysql_error());  	
 								$sqlCount = mysql_result($sqlResult, 0);												
 								echo "<tr>";						
-								echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&es=3'>$row[0]</a></td>";
+								echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=3'>$row[0]</a></td>";
 								echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
 								echo "<td align='center'>OpenGL ES 3.0</td>";
 								echo "</tr>";	    

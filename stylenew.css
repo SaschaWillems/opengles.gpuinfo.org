@@ -233,6 +233,12 @@ h4 {
 	border-left: 4px solid #8a6d3b;
 }
 
+.header-info {
+	color: #000;
+	background-color: #F0F0F0;
+	border-left: 4px solid #31708f;
+}
+
 .tableheader {
 	border-bottom:1px solid gray;
 	color:#31a9db;
@@ -252,6 +258,12 @@ h4 {
 {
 	color:#ba2a8d;
 	font-weight:bold;
+}
+
+.headercaption
+{
+	color:#ba2a8d !important;
+	font-weight:normal;
 }
 
 .group
