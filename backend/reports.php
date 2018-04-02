@@ -129,6 +129,12 @@
         if ($_REQUEST['filter']['capabilityesversion'] == "3") {
             $tablename = 'reports_es30caps';
         }            
+        if ($_REQUEST['filter']['capabilityesversion'] == "31") {
+            $tablename = "reports_es31caps";
+        }														
+        if ($_REQUEST['filter']['capabilityesversion'] == "32") {
+            $tablename = "reports_es32caps";
+        }		        
         $columnname = $_REQUEST['filter']['capability'];
 		// Check if capability column exists
 		$result = DB::$connection->prepare("SELECT * from information_schema.columns where TABLE_NAME= :tablename and column_name = :columnname");
@@ -136,7 +142,7 @@
         if ($result->rowCount() == 0) {
             die("Invalid capability");
         }                
-        $whereClause = "where reports.id in (select reportid from $tablename where $columnname = :filter_capability_value)";
+        $whereClause = "where reports.id in (select reportid from $tablename where `$columnname` = :filter_capability_value)";
         $params['filter_capability_value'] = $_REQUEST['filter']['capabilityvalue'];
     }    
 

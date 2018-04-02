@@ -99,7 +99,7 @@
 						<?php		
 							DB::connect();			
 							// TODO: Check if name is valid column name (security!)
-							$result = DB::$connection->prepare("SELECT $name as value, count(0) as reports from $tablename where $name > 0 group by 1 order by 1");
+							$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` > 0 group by 1 order by 1");
 							$result->execute();
 							$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 							foreach ($rows as $cap) {
@@ -128,7 +128,7 @@
 			<?php 
 				DB::connect();			
 				// TODO: Check if name is valid column name (security!)
-				$result = DB::$connection->prepare("SELECT $name as value, count(0) as reports from $tablename where $name > 0 group by 1 order by 2 desc");
+				$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` > 0 group by 1 order by 2 desc");
 				$result->execute();
 				$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 				foreach ($rows as $row) {
