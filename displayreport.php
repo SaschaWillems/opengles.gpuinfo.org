@@ -49,10 +49,10 @@
 			echo "<tr>\n";
 			echo "<td class='subkey'>".$captions[$i]."</td>\n";			
 			for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) {	 
-				if ($captions[$i] == "submitter") {
-					echo "<td class='valuezeroleftdark'><a href='.\listreports.php?submitter=".$column[$j][$i]."'>".$column[$j][$i]."</a></td>";
+				if ($captions[$i] == "Submitted by") {
+					echo "<td><a href='.\listreports.php?submitter=".$column[$j][$i]."'>".$column[$j][$i]."</a></td>";
 				} else {
-					echo "<td class='valuezeroleftdark'>".$column[$j][$i]."</td>";
+					echo "<td>".$column[$j][$i]."</td>";
 				}
 			} 
 			echo "</tr>\n";
