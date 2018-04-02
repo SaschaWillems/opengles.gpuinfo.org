@@ -30,33 +30,21 @@
 
 	<script>
 		$(document).ready(function() {
-			var table = $('#capabilities').DataTable({
-				"pageLength" : 50,
-				"paging" : true,
-				"stateSave": false, 
-				"searchHighlight" : true,	
-				"dom": 'fp',			
-				"bInfo": false,	
-				"order": [[ 2, "asc" ], [ 0, "asc" ]],
-				"deferRender": true,
-				"processing": true,
-				"columnDefs": [
-						{ "visible": false, "targets": 2 }
-				],					
-				"drawCallback": function (settings) {
-					var api = this.api();
-					var rows = api.rows( {page:'current'} ).nodes();
-					var last = null;
-					api.column(2, {page:'current'} ).data().each( function ( group, i ) {
-						if ( last !== group ) {
-							$(rows).eq( i ).before(
-								'<tr><td colspan="2" class="group">'+group+'</td></tr>'
-							);
-							last = group;
-						}
-					});
-				}					
-			});
+            var tableNames = [ "#table-es20", "#table-es30", '#table-es31', '#table-es32' ];
+	        for (var i=0; i < tableNames.length; i++) 
+            {           			
+				$(tableNames[i]).DataTable({
+					"pageLength" : -1,
+					"paging" : false,
+					"stateSave": false, 
+					"searchHighlight" : true,	
+					"dom": 'fp',			
+					"bInfo": false,	
+					"order": [[ 0, "asc" ]],
+					"deferRender": true,
+					"processing": true
+				});
+			}
 		} );	
 	</script>
 
@@ -65,46 +53,121 @@
 	</div>
 
 	<center>	
-		<div class='parentdiv'>
-			<div class='tablediv' style='width:auto; display: inline-block;'>	
 
-				<table id="capabilities" class="table table-striped table-bordered table-hover reporttable" >
-					<thead>
-						<tr>				
-							<th>Capability name</th>
-							<th>Coverage</th>
-							<th>GL ES</th>
-						</tr>
-					</thead>
-					<tbody>		
-						<!-- GL ES 2.0 -->
-						<?php										
-							$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es20caps' and column_name != 'reportid'") or die(mysql_error());  							
-							while ($row = mysql_fetch_row($sqlresult)) {
-								$sqlResult = mysql_query("SELECT count(*) FROM reports_es20caps WHERE `$row[0]` != 0") or die(mysql_error());  	
-								$sqlCount = mysql_result($sqlResult, 0);												
-								echo "<tr>";						
-								echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=2'>$row[0]</a></td>";
-								echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
-								echo "<td align='center'>OpenGL ES 2.0</td>";
-								echo "</tr>";	    
-							}            			
-						?>   					
-						<!-- GL ES 3.0 -->
-						<?php										
-							$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es30caps' and column_name != 'reportid'") or die(mysql_error());  							
-							while ($row = mysql_fetch_row($sqlresult)) {
-								$sqlResult = mysql_query("SELECT count(*) FROM reports_es30caps WHERE `$row[0]` != 0") or die(mysql_error());  	
-								$sqlCount = mysql_result($sqlResult, 0);												
-								echo "<tr>";						
-								echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=3'>$row[0]</a></td>";
-								echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
-								echo "<td align='center'>OpenGL ES 3.0</td>";
-								echo "</tr>";	    
-							}            			
-						?>   					
-					</tbody>
-				</table> 
+		<!-- Navigation -->
+		<div>
+			<ul class='nav nav-tabs'>
+				<li class='active'><a data-toggle='tab' href='#tabs-gles20'>2.0</a></li>
+				<li><a data-toggle='tab' href='#tabs-gles30'>3.0</a></li>
+				<li><a data-toggle='tab' href='#tabs-gles31'>3.1</a></li>
+				<li><a data-toggle='tab' href='#tabs-gles32'>3.2</a></li>
+			</ul>
+		</div>
+
+		<div class='parentdiv'>
+
+			<div class='tablediv tab-content' style='width:auto; display: inline-block;'>
+
+				<div id='tabs-gles20' class='tab-pane fade in active reportdiv'>
+					<h4 class="headercaption">OpenGL ES 2.0 capabilities</h4>
+					<table id="table-es20" class="table table-striped table-bordered table-hover" >
+						<thead>
+							<tr>				
+								<th>Capability name</th>
+								<th>Coverage</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php										
+								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es20caps' and column_name != 'reportid'") or die(mysql_error());  							
+								while ($row = mysql_fetch_row($sqlresult)) {
+									$sqlResult = mysql_query("SELECT count(*) FROM reports_es20caps WHERE `$row[0]` != 0") or die(mysql_error());  	
+									$sqlCount = mysql_result($sqlResult, 0);												
+									echo "<tr>";						
+									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=2'>$row[0]</a></td>";
+									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "</tr>";	    
+								}            			
+							?>   															
+						</tbody>
+					</table> 
+				</div>
+
+				<div id='tabs-gles30' class='tab-pane fade reportdiv'>
+					<h4 class="headercaption">OpenGL ES 3.0 capabilities</h4>
+					<table id="table-es30" class="table table-striped table-bordered table-hover" >
+						<thead>
+							<tr>				
+								<th>Capability name</th>
+								<th>Coverage</th>
+							</tr>
+						</thead>
+						<tbody>		
+							<?php										
+								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es30caps' and column_name != 'reportid'") or die(mysql_error());  							
+								while ($row = mysql_fetch_row($sqlresult)) {
+									$sqlResult = mysql_query("SELECT count(*) FROM reports_es30caps WHERE `$row[0]` != 0") or die(mysql_error());  	
+									$sqlCount = mysql_result($sqlResult, 0);												
+									echo "<tr>";						
+									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=3'>$row[0]</a></td>";
+									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "</tr>";	    
+								}            			
+							?>   									
+						</tbody>
+					</table> 
+				</div>
+
+				<div id='tabs-gles31' class='tab-pane fade reportdiv'>
+					<h4 class="headercaption">OpenGL ES 3.1 capabilities</h4>
+					<table id="table-es31" class="table table-striped table-bordered table-hover" >
+						<thead>
+							<tr>				
+								<th>Capability name</th>
+								<th>Coverage</th>
+							</tr>
+						</thead>
+						<tbody>		
+							<?php										
+								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es31caps' and column_name != 'reportid'") or die(mysql_error());  							
+								while ($row = mysql_fetch_row($sqlresult)) {
+									$sqlResult = mysql_query("SELECT count(*) FROM reports_es31caps WHERE `$row[0]` != 0") or die(mysql_error());  	
+									$sqlCount = mysql_result($sqlResult, 0);												
+									echo "<tr>";				
+									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=31'>$row[0]</a></td>";
+									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "</tr>";	    
+								}            			
+							?>   											
+						</tbody>
+					</table> 
+				</div>
+
+				<div id='tabs-gles32' class='tab-pane fade reportdiv'>
+					<h4 class="headercaption">OpenGL ES 3.2 capabilities</h4>
+					<table id="table-es32" class="table table-striped table-bordered table-hover" >
+						<thead>
+							<tr>				
+								<th>Capability name</th>
+								<th>Coverage</th>
+							</tr>
+						</thead>
+						<tbody>		
+							<?php										
+								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es32caps' and column_name != 'reportid'") or die(mysql_error());  							
+								while ($row = mysql_fetch_row($sqlresult)) {
+									$sqlResult = mysql_query("SELECT count(*) FROM reports_es32caps WHERE `$row[0]` != 0") or die(mysql_error());  	
+									$sqlCount = mysql_result($sqlResult, 0);												
+									echo "<tr>";				
+									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=32'>$row[0]</a></td>";
+									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "</tr>";	    
+								}            			
+							?>   											
+						</tbody>
+					</table> 
+				</div>
+
 
 			</div>
 		</div>

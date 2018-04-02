@@ -88,7 +88,12 @@
 		$defaultHeader = false;
 		$headerClass = "header-info";
 		$link = "displaycapability.php?name=".$filter["capability"]."&esversion=".$filter["capabilityesversion"];
-		$caption = "Reports with <a href=".$link.">".$filter["capability"]."</a> (OpenGL ES.".$filter["capabilityesversion"].".0) = ".$filter["capabilityvalue"];	
+		$major = substr($filter["capabilityesversion"], 0, 1);
+		$minor = '0';
+		if (strlen($filter["capabilityesversion"]) > 1) {
+			$minor = substr($filter["capabilityesversion"], -1);
+		}
+		$caption = "Reports with <a href=".$link.">".$filter["capability"]."</a> (OpenGL ES $major.$minor) = ".$filter["capabilityvalue"];	
 	}
 
 	if ($defaultHeader) {

@@ -34,6 +34,17 @@
 	if ($esversion == "3") {
 		$tablename = "reports_es30caps";
 	}														
+	if ($esversion == "31") {
+		$tablename = "reports_es31caps";
+	}														
+	if ($esversion == "32") {
+		$tablename = "reports_es32caps";
+	}						
+	$major = substr($esversion, 0, 1);
+	$minor = '0';
+	if (strlen($esversion) > 1) {
+		$minor = substr($esversion, -1);
+	}									
 
 	// Check if capability as valid and part of the selected table
 	DB::connect();
@@ -70,7 +81,7 @@
 	</script>
 
 	<div class='header'>
-		<h4 class='headercaption'>Value distribution for <?php echo $name ?> (OpenGL ES <?php echo $esversion ?>.0)</h4>
+		<h4 class='headercaption'>Value distribution for <?php echo $name ?> (OpenGL ES <?php echo $major.".".$minor ?>)</h4>
 	</div>
 
 	<center>	
