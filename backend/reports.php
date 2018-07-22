@@ -44,32 +44,7 @@
         $paging = "LIMIT ".$_REQUEST["length"]. " OFFSET ".$_REQUEST["start"];
     }  
 
-    // Filtering
-    $searchColumns = array(
-        'id',
-        'devicename(reports.device)', 
-        'concat(reports.esversion_major, ".", reports.esversion_minor)', 
-        'concat(reports.shadinglanguageversion_major, ".", reports.shadinglanguageversion_minor)', 
-        'gl_renderer', 
-        'os', 
-        'date(reports.submissiondate)');
-
-    // Per-column, filtering
-    $filters = array();
-    for ($i = 0; $i < count($_REQUEST['columns']); $i++) {
-        $column = $_REQUEST['columns'][$i];
-        if (($column['searchable'] == 'true') && ($column['search']['value'] != '')) {
-            $filters[] = $searchColumns[$i].' like :filter_'.$i;
-            $params['filter_'.$i] = $column['search']['value'].'%';
-            if (($i == 1) || ($i == 4)) {
-                $params['filter_'.$i] = '%'.$params['filter_'.$i];
-            }
-        }
-    }
-    if (sizeof($filters) > 0) {
-        $searchClause = 'where '.implode(' and ', $filters);
-    }        
-
+    // Pre-Filter
     $whereClause = '';
     $selectAddColumns = '';
     $negate = false;
@@ -145,6 +120,32 @@
         $whereClause = "where reports.id in (select reportid from $tablename where `$columnname` = :filter_capability_value)";
         $params['filter_capability_value'] = $_REQUEST['filter']['capabilityvalue'];
     }    
+
+    // Per-Column filter
+    $searchColumns = array(
+        'id',
+        'devicename(reports.device)', 
+        'concat(reports.esversion_major, ".", reports.esversion_minor)', 
+        'concat(reports.shadinglanguageversion_major, ".", reports.shadinglanguageversion_minor)', 
+        'gl_renderer', 
+        'os', 
+        'date(reports.submissiondate)');
+
+    // Per-column, filtering
+    $filters = array();
+    for ($i = 0; $i < count($_REQUEST['columns']); $i++) {
+        $column = $_REQUEST['columns'][$i];
+        if (($column['searchable'] == 'true') && ($column['search']['value'] != '')) {
+            $filters[] = $searchColumns[$i].' like :filter_'.$i;
+            $params['filter_'.$i] = $column['search']['value'].'%';
+            if (($i == 1) || ($i == 4)) {
+                $params['filter_'.$i] = '%'.$params['filter_'.$i];
+            }
+        }
+    }
+    if (sizeof($filters) > 0) {
+        $searchClause = ($whereClause === '' ? 'where ' : 'and ').implode(' and ', $filters);
+    }       
 
     if (!empty($orderByColumn)) {
         $orderBy = "order by ".$orderByColumn." ".$orderByDir;
