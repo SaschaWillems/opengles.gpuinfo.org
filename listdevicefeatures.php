@@ -20,16 +20,12 @@
 	*/ 
  
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
+	include 'dbconfig.php';	
 	
-	dbConnect();  
-	
-	$sqlResult = mysql_query("SELECT count(*) from viewDeviceFeatures");
-	$sqlCount = mysql_result($sqlResult, 0);	
-
-	$sqlResult = mysql_query("select count(*) from reports");
-	$reportCount = mysql_result($sqlResult, 0);
-	
+	DB::connect();
+ 
+	$featureCount = DB::getCount("SELECT count(*) from viewDeviceFeatures", []);
+	$reportCount = DB::getCount("SELECT count(*) from reports", []);
 ?>
 
 	<script>
@@ -47,7 +43,7 @@
 	</script>
 
 	<div class='header'>
-		<h4 style='margin-left:10px;'>Listing all device features (<?php echo $sqlCount ?>)</h4>
+		<h4 style='margin-left:10px;'>Listing all device features (<?php echo $featureCount ?>)</h4>
 	</div>
 
 <center>	
@@ -61,12 +57,10 @@
 					</tr>
 				</thead>
 				<tbody>
-					<?php							
-						$sqlstr = "SELECT name, reports from viewDeviceFeatures";                
-						$sqlresult = mysql_query($sqlstr) or die(mysql_error());  
-						
-						while ($row = mysql_fetch_row($sqlresult))
-						{
+					<?php					
+						$stmnt = DB::$connection->prepare("SELECT name, reports from viewDeviceFeatures");
+						$stmnt->execute();			
+						while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 							echo "<tr>";						
 							echo "<td class='firstcolumn'><a href='listreports.php?devicefeature=".$row[0]."'>".$row[0]."</a></td>";					
 							echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportCount * 100.0), 2)."%</td>";
@@ -79,7 +73,7 @@
 	</div>
 </center>
 <?php 
-	dbDisconnect();
+	DB::disconnect();
 	include "footer.html";
 ?>
 </body>

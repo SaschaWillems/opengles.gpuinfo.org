@@ -20,15 +20,12 @@
 	*/ 
  
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
+	include 'dbconfig.php';	
 	
-	dbConnect();  
-	
-	$sqlResult = mysql_query("SELECT count(distinct(name)) from compressedformats cf where cf.name != '0x0'") or die();
-	$formatcount = mysql_result($sqlResult, 0);
-
-	$sqlResult = mysql_query("SELECT count(*) FROM reports") or die();
-	$reportcount = mysql_result($sqlResult, 0);
+	DB::connect();
+ 
+	$formatCount = DB::getCount("SELECT count(distinct(name)) from compressedformats cf where cf.name != '0x0'", []);
+	$reportCount = DB::getCount("SELECT count(*) from reports", []);	
 ?>	
 
 	<script>
@@ -46,17 +43,8 @@
 	</script>
 
 	<div class='header'>
-		<h4 style='margin-left:10px;'>Listing all compressed texture formats (<?php echo $formatcount ?>)</h4>
+		<h4 style='margin-left:10px;'>Listing all compressed texture formats (<?php echo $formatCount ?>)</h4>
 	</div>
-
-<?php
-	$sqlstr = "SELECT IF(cf.displayname IS NULL, cf.name, cf.displayname) AS name, count(rcf.compressedformatid) as count
-		from compressedformats cf
-		left outer join reports_compressedformats rcf on cf.id = rcf.compressedformatid
-		where left(cf.name, 2) != '0x'
-		group by cf.name";         
-	$sqlresult = mysql_query($sqlstr) or die(mysql_error());  	
-?>
 
 <center>	
 	<div class='parentdiv'>
@@ -70,14 +58,18 @@
 				</thead>
 				<tbody>
 					<?php		
-						while ($row = mysql_fetch_row($sqlresult))
-						{
+						$stmnt = DB::$connection->prepare("SELECT IF(cf.displayname IS NULL, cf.name, cf.displayname) AS name, count(rcf.compressedformatid) as count
+							from compressedformats cf
+							left outer join reports_compressedformats rcf on cf.id = rcf.compressedformatid
+							where left(cf.name, 2) != '0x'
+							group by cf.name");
+						$stmnt->execute();			
+						while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {					
 							$formatname = $row[0];
-							if (!empty($formatname)) 
-							{
+							if (!empty($formatname)) {
 								echo "<tr>";						
 								echo "<td class='firstcolumn'><a href='listreports.php?compressedtextureformat=".$formatname."'>".$formatname."</a> (<a href='listreports.php?compressedtextureformat=".$formatname."&option=not'>not</a>)</td>";
-								echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportcount * 100), 2)."%</td>";
+								echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportCount * 100), 2)."%</td>";
 								echo "</tr>";	    
 								$index++;
 							}
@@ -90,7 +82,7 @@
 </center>
 
 <?php 
-	dbDisconnect();
+	DB::disconnect();
 	include "footer.html";
 ?>
 

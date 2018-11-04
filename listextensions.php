@@ -21,14 +21,13 @@
  
 	include 'header.html';
 	include 'serverconfig/gles_config.php';	
-	
-	dbConnect();  
-	
-	$sqlResult = mysql_query("SELECT count(*) from viewExtensions");
-	$sqlCount = mysql_result($sqlResult, 0);
 
-	$sqlResult = mysql_query("SELECT count(*) FROM reports") or die();
-	$reportcount = mysql_result($sqlResult, 0);	
+	include 'dbconfig.php';	
+	
+	DB::connect();
+ 
+	$extensionsCount = DB::getCount("SELECT count(*) from viewExtensions", []);
+	$reportCount = DB::getCount("SELECT count(*) from reports", []);	
 ?>
 
 	<script>
@@ -46,7 +45,7 @@
 	</script>
 
 	<div class='header'>
-		<h4 style='margin-left:10px;'>Listing all available GLES extensions (<?php echo $sqlCount ?>)</h4>
+		<h4 style='margin-left:10px;'>Listing all available GLES extensions (<?php echo $extensionsCount ?>)</h4>
 	</div>
 
 	<center>	
@@ -62,21 +61,18 @@
 					</thead>
 					<tbody>				
 						<?php					
-							$sqlstr = "select name, reports from viewExtensions";                
-							$sqlresult = mysql_query($sqlstr) or die(mysql_error());  
-							
-							while ($row = mysql_fetch_row($sqlresult))
-							{
+							$stmnt = DB::$connection->prepare("SELECT name, reports from viewExtensions");
+							$stmnt->execute();			
+							while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 								$extname = $row[0];
-								if (!empty($extname)) 
-								{
+								if (!empty($extname)) {
 									$link = str_replace("GL_", "", $extname);
 									$extparts = explode("_", $link);
 									$vendor = $extparts[0];
 									$link = str_replace($vendor."_", "", $link);						
 									echo "<tr>";						
 									echo "<td class='firstcolumn'><a href='listreports.php?extension=".$extname."'>".$extname."</a> (<a href='listreports.php?extension=".$extname."&option=not'>not</a>) [<a href='http://www.khronos.org/registry/gles/extensions/$vendor/$link.txt' target='_blank' title='Show specification for this extensions'>?</a>]</td>";
-									echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportcount * 100.0), 2)."%</td>";
+									echo "<td class='firstcolumn' align=center>".round(($row[1] / $reportCount * 100.0), 2)."%</td>";
 									echo "</tr>";	    
 									$index++;
 								}
@@ -90,7 +86,7 @@
 	</center>
 	
 	<?php 
-		dbDisconnect();		
+		DB::disconnect();		
 		include "footer.html";
 	?>
 

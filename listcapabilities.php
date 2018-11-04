@@ -20,12 +20,12 @@
 	*/ 
  
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
+	include 'dbconfig.php';	
 	
-	dbConnect();  
-	
-	$sqlResult = mysql_query("SELECT count(*) FROM reports") or die();
-	$reportcount = mysql_result($sqlResult, 0);	
+	DB::connect();
+ 
+	$formatCount = DB::getCount("SELECT count(distinct(name)) from compressedformats cf where cf.name != '0x0'", []);
+	$reportCount = DB::getCount("SELECT count(*) from reports", []);	
 ?>
 
 	<script>
@@ -79,13 +79,13 @@
 						</thead>
 						<tbody>
 							<?php										
-								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es20caps' and column_name != 'reportid'") or die(mysql_error());  							
-								while ($row = mysql_fetch_row($sqlresult)) {
-									$sqlResult = mysql_query("SELECT count(*) FROM reports_es20caps WHERE `$row[0]` != 0") or die(mysql_error());  	
-									$sqlCount = mysql_result($sqlResult, 0);												
+								$stmnt = DB::$connection->prepare("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es20caps' and column_name != 'reportid'");
+								$stmnt->execute();			
+								while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {
+									$supportedCount = DB::getCount("SELECT count(*) FROM reports_es20caps WHERE `$row[0]` != 0", []);
 									echo "<tr>";						
 									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=2'>$row[0]</a></td>";
-									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "<td align=center>".round($supportedCount / $reportCount * 100, 1)."%</td>";
 									echo "</tr>";	    
 								}            			
 							?>   															
@@ -104,13 +104,13 @@
 						</thead>
 						<tbody>		
 							<?php										
-								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es30caps' and column_name != 'reportid'") or die(mysql_error());  							
-								while ($row = mysql_fetch_row($sqlresult)) {
-									$sqlResult = mysql_query("SELECT count(*) FROM reports_es30caps WHERE `$row[0]` != 0") or die(mysql_error());  	
-									$sqlCount = mysql_result($sqlResult, 0);												
+								$stmnt = DB::$connection->prepare("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es30caps' and column_name != 'reportid'");
+								$stmnt->execute();			
+								while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {
+									$supportedCount = DB::getCount("SELECT count(*) FROM reports_es30caps WHERE `$row[0]` != 0", []);
 									echo "<tr>";						
 									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=3'>$row[0]</a></td>";
-									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "<td align=center>".round($supportedCount / $reportCount * 100, 1)."%</td>";
 									echo "</tr>";	    
 								}            			
 							?>   									
@@ -128,14 +128,14 @@
 							</tr>
 						</thead>
 						<tbody>		
-							<?php										
-								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es31caps' and column_name != 'reportid'") or die(mysql_error());  							
-								while ($row = mysql_fetch_row($sqlresult)) {
-									$sqlResult = mysql_query("SELECT count(*) FROM reports_es31caps WHERE `$row[0]` != 0") or die(mysql_error());  	
-									$sqlCount = mysql_result($sqlResult, 0);												
+							<?php				
+								$stmnt = DB::$connection->prepare("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es31caps' and column_name != 'reportid'");
+								$stmnt->execute();			
+								while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {
+									$supportedCount = DB::getCount("SELECT count(*) FROM reports_es31caps WHERE `$row[0]` != 0", []);
 									echo "<tr>";				
 									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=31'>$row[0]</a></td>";
-									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "<td align=center>".round($supportedCount / $reportCount * 100, 1)."%</td>";
 									echo "</tr>";	    
 								}            			
 							?>   											
@@ -154,13 +154,13 @@
 						</thead>
 						<tbody>		
 							<?php										
-								$sqlresult = mysql_query("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es32caps' and column_name != 'reportid'") or die(mysql_error());  							
-								while ($row = mysql_fetch_row($sqlresult)) {
-									$sqlResult = mysql_query("SELECT count(*) FROM reports_es32caps WHERE `$row[0]` != 0") or die(mysql_error());  	
-									$sqlCount = mysql_result($sqlResult, 0);												
+								$stmnt = DB::$connection->prepare("SELECT column_name from information_schema.columns where TABLE_NAME='reports_es32caps' and column_name != 'reportid'");
+								$stmnt->execute();			
+								while ($row = $stmnt->fetch(PDO::FETCH_NUM)) {
+									$supportedCount = DB::getCount("SELECT count(*) FROM reports_es32caps WHERE `$row[0]` != 0", []);
 									echo "<tr>";				
 									echo "<td class='subkey'><a href='displaycapability.php?name=$row[0]&esversion=32'>$row[0]</a></td>";
-									echo "<td align=center>".round($sqlCount / $reportcount * 100, 1)."%</td>";
+									echo "<td align=center>".round($supportedCount / $reportCount * 100, 1)."%</td>";
 									echo "</tr>";	    
 								}            			
 							?>   											
@@ -174,7 +174,7 @@
 	</center>
 	
 	<?php 
-		dbDisconnect();		
+		DB::disconnect();		
 		include "footer.html";
 	?>
 

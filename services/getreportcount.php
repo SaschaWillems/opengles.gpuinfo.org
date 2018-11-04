@@ -3,7 +3,7 @@
 		*
 		* OpenGL ES hardware capability database server implementation
 		*
-		* Copyright (C) 2013-2015 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2013-2018 by Sascha Willems (www.saschawillems.de)
 		*
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
@@ -18,14 +18,17 @@
 		* PURPOSE.  See the GNU AGPL 3.0 for more details.
 		*
 	*/ 
-	include './../serverconfig/gles_config.php';	
-
-	dbConnect();
+	include '../dbconfig.php';
 	
-	$sqlResult = mysql_query("select count(*) from reports") or die(mysql_error());
-	$sqlCount = mysql_result($sqlResult, 0);
-	$arr = array('count' => $sqlCount);	
-	echo "jsoncallback(".json_encode($arr).")";			
-	
-	dbDisconnect();
+	DB::connect();				
+	try {	
+		$stmnt = DB::$connection->prepare("SELECT count(*) from reports");
+		$stmnt->execute([]);
+		$arr = array('count' => $stmnt->fetchColumn());	
+		echo "jsoncallback(".json_encode($arr).")";			
+	} catch (PDOException $e) {
+		header('HTTP/ 500 server error');
+		echo 'Server error: Could not check report!';
+	}
+	DB::disconnect();	
 ?>     
