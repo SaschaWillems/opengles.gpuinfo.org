@@ -5,7 +5,7 @@
 		*
 		* Upload and convert a glESCapsViewer report and insert into database if not present
 		*	
-		* Copyright (C) 2011-2017 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2011-2018 by Sascha Willems (www.saschawillems.de)
 		*	
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
@@ -21,13 +21,13 @@
 		*
 	*/
 
-	include './dbconfig.php';
+	include 'dbconfig.php';
 
 	// Check for valid file
 	$path='./uploads/';
 
 	// Reports are pretty small, so limit file size for upload (128 KByte will be more than enough)
-	$MAX_FILESIZE = 64 * 1024;
+	$MAX_FILESIZE = 128 * 1024;
 
 	$file = $_FILES['data']['name'];
 	
@@ -43,7 +43,7 @@
 
 	// Skip if not XML
 	$ext = pathinfo($_FILES['data']['name'], PATHINFO_EXTENSION); 
-	if ($ext != 'xml') 
+	if ($ext != 'xml')
 	{
 		echo "Report '$file' is not a valid XML file!";    
 		header('HTTP/ 433 Not a valid XML file!');
@@ -60,42 +60,49 @@
 
 	$xml = file_get_contents($path.$_FILES['data']['name']);
 	
-	// Connect to DB 
-	dbConnect();
+	DB::connect();
 	
 	$xmlstring = str_replace("'", "\\'", $xml);
 	
 	// Check if report already exists
-	$sqlresult = mysql_query("select check_glesreport('$xmlstring');");
-	$sqlrow = mysql_fetch_row($sqlresult);
-	
-	$res = explode("|", $sqlrow[0]);
-	
-	if ($res[0] == "duplicate") {
-		mail($mailto, 'Duplicate report for '.$res[1], "Duplicate report submitted :\nDevice = $res[1]\nIP = $IP"); 	
-		header('HTTP/1.0 200 res_duplicate');
+	try {
+		$stmnt = DB::$connection->prepare("SELECT check_glesreport('$xmlstring');");
+		$stmnt->execute();	
+		$row = $stmnt->fetch(PDO::FETCH_NUM);
+		$res = explode("|", $row[0]);
+		if ($res[0] == "duplicate") {
+			mail($mailto, 'Duplicate report for '.$res[1], "Duplicate report submitted :\nDevice = $res[1]\nIP = $IP"); 	
+			header('HTTP/1.0 200 res_duplicate');
+			DB::disconnect();
+			die('');
+		}			
+	} catch (PDOException $e) {
+		mail($mailto, "Error while uploading report (check if present)", $e->getMessage());
+		header('HTTP/1.0 500 server_error');
+		DB::disconnect();
 		die('');
-	}		
-		
-	$sqlresult = mysql_query("call import_glesreport('$xmlstring');");	
-		
-    if (!$sqlresult) {
-		$error = mysql_error();
-		mail($mailto, 'glESCapsViewer error', "An uploaded report raised a mysql error :\nError = $error\nIP = $IP\nXML = $xmlstring"); 	
-		header('HTTP/1.0 404 Error while saving report to database!');
-		die('');
-	};	
+	}
 	
-	$sqlstr = "SELECT Max(ID) as ReportID FROM reports;";   
-	$sqlresult = mysql_query($sqlstr);
+	try {
+		$stmnt = DB::$connection->prepare("CALL import_glesreport('$xmlstring');");
+		$stmnt->execute();	
+	} catch (PDOException $e) {
+		mail($mailto, "Error while uploading report (import)", $e->getMessage()."\nXML".$xmlstring);
+		header('HTTP/1.0 500 server_error');
+		DB::disconnect();
+		die('');
+	}
 
-	$sqlrow = mysql_fetch_assoc($sqlresult);
-	$reportID = $sqlrow["ReportID"];	
+	$stmnt = DB::$connection->prepare("SELECT Max(ID) as ReportID FROM reports");
+	$stmnt->execute();
+	$row = $stmnt->fetch(PDO::FETCH_ASSOC);
+	$reportID = $row["ReportID"];	
 
 	header('HTTP/1.0 200 res_uploaded');	
 
-	$sqlresult = mysql_query("select device, GL_RENDERER, GL_VERSION, os, cpuarch, submitter from reports where id = ".$reportID) or die('');
-	$reportDetails = mysql_fetch_row($sqlresult);
+	$stmnt = DB::$connection->prepare("SELECT device, GL_RENDERER, GL_VERSION, os, cpuarch, submitter from reports where id = :reportid");
+	$stmnt->execute(["reportid" => $reportID]);
+	$reportDetails = $stmnt->fetch(PDO::FETCH_NUM);
 
 	$msgtitle = "New OpenGL ES report for ".$reportDetails[0]." (".$reportDetails[1].")";
 
@@ -110,5 +117,5 @@
 	
 	mail($mailto, $msgtitle, $msg); 	
 
-	dbDisconnect();	 
+	DB::disconnect();	 
 ?>
