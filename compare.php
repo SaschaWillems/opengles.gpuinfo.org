@@ -20,9 +20,9 @@
 	*/ 
  
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
+	include 'dbconfig.php';	
 	
-	dbConnect();
+	DB::connect();
 	
 	// Compare selected reports
 	$reportids = array();
@@ -30,8 +30,7 @@
 	$reportlimit = false;
 
 	// Get checked report IDs
-	foreach ($_GET as $k => $v) 
-	{
+	foreach ($_GET as $k => $v) {
 		if (!is_numeric($k)) 
 			continue;
 		$reportids[] = $k;	
@@ -47,16 +46,13 @@
 
 	// Get device names
 	$repids = implode(",", $reportids);   
-	$sql = "SELECT devicename_short(device) as device FROM reports WHERE ID IN (" . $repids . ")";
-	$sqlresult = mysql_query($sql) or die(mysql_error());	
-	while($row = mysql_fetch_row($sqlresult)) 
-	{		
+	$stmnt = DB::$connection->prepare("SELECT devicename_short(device) as device FROM reports WHERE ID IN (" . $repids . ")");
+	$stmnt->execute();
+	while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 		$devicenames[] = $row[0];
 	}
-	
-	$sqlResult = mysql_query("select count(*) from viewExtensions");
-	$sqlCount = mysql_result($sqlResult, 0);
 ?>	
+
     <div class='header'>
 		<h4 style='margin-left:10px;'>Comparing <?php echo implode(", ", $devicenames); ?></h4>
 		<label id="toggle-label" class="checkbox-inline" style="display:none;">
@@ -65,32 +61,30 @@
 	</div>
 
 <?php
-	function generate_table($sql) {
-	
-		$sqlresult = mysql_query($sql) or die(mysql_error());			
-		$column    = array();
-		$captions  = array();
+	function generate_table($sql) {	
+		$columns = array();
+		$captions = array();
 		
-		while($row = mysql_fetch_row($sqlresult)) 
-		{		
+		$stmnt = DB::$connection->prepare($sql);
+		$stmnt->execute();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 			$colindex = 0;
 			$reportdata = array();		
-			foreach ($row as $data) 
-			{			
-				$reportdata[] = $data;	  
-				$captions[] = mysql_field_name($sqlresult, $colindex);			
+			foreach ($row as $data) {			
+				$reportdata[] = $data;	
+				$meta = $stmnt->getColumnMeta($colindex);
+				$captions[] = $meta["name"];
 				$colindex++;
 			} 
-			$column[] = $reportdata; 
+			$columns[] = $reportdata; 
 		}
 		
-		// Generate table from array
 		$rowindex = 0;
-		for ($i = 0, $arrsize = sizeof($column[0]); $i < $arrsize; ++$i) { 	  
+		for ($i = 0, $arrsize = sizeof($columns[0]); $i < $arrsize; ++$i) { 	  
 			echo "<tr>";
 			echo "<td class='fieldcaption'>".$captions[$i]."</td>\n";
-			for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) {	 
-				echo "<td class='value'>".$column[$j][$i]."</td>";
+			for ($j = 0, $subarrsize = sizeof($columns); $j < $subarrsize; ++$j) {	 
+				echo "<td class='value'>".$columns[$j][$i]."</td>";
 			} 
 			echo "</tr>";
 			$rowindex++;
@@ -99,72 +93,61 @@
 	}
 	
 	function generate_caps_table($sql, $esversion) 
-	{
+	{	
+		$columns = array();
+		$captions = array();
 	
-		$sqlresult = mysql_query($sql) or die(mysql_error());	
-		$column    = array();
-		$captions  = array();
-		
-		while($row = mysql_fetch_row($sqlresult)) 
-		{		
+		$stmnt = DB::$connection->prepare($sql);
+		$stmnt->execute();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 			$colindex = 0;
 			$reportdata = array();		
-			foreach ($row as $data) 
-			{			
+			foreach ($row as $data)	{			
 				$reportdata[] = $data;	  
-				$captions[]   = mysql_field_name($sqlresult, $colindex);			
+				$meta = $stmnt->getColumnMeta($colindex);
+				$captions[] = $meta["name"];
 				$colindex++;
 			} 
-			$column[] = $reportdata; 
+			$columns[] = $reportdata; 
 		}		
 								
 		// Generate table from array
 		$rowindex = 0;
-		for ($i = 0, $arrsize = sizeof($column[0]); $i < $arrsize; ++$i) { 	  
-			if ($captions[$i] != 'REPORTID') 
-			{
+		for ($i = 0, $arrsize = sizeof($columns[0]); $i < $arrsize; ++$i) { 	  
+			if ($captions[$i] != 'REPORTID') {
 				$className = 'same';
-				// Get extremes
-				if (is_numeric($column[0][$i])) 
-				{
-					$minval = $column[0][$i];
-					$maxval = $column[0][$i];					
-					for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) 
-					{	 			
-						if ($column[$j][$i] < $minval) 
-						{
+				// Get max and min values
+				if (is_numeric($columns[0][$i])) {
+					$minval = $columns[0][$i];
+					$maxval = $columns[0][$i];					
+					for ($j = 0, $subarrsize = sizeof($columns); $j < $subarrsize; ++$j) {	 			
+						if ($columns[$j][$i] < $minval) {
 							$minval = $column[$j][$i];
 						}
-						if ($column[$j][$i] > $maxval) 
-						{
-							$maxval = $column[$j][$i];
+						if ($column[$j][$i] > $maxval) {
+							$maxval = $columns[$j][$i];
 						}
 					}
 				}		
-				if ($minval < $maxval) 
-				{
+				if ($minval < $maxval) {
 					$className = 'diff';
 				}
 			
 				echo "<tr class='$className'>";
 				echo "<td class='fieldcaption'>".$captions[$i]."</td>";
-				for ($j = 0, $subarrsize = sizeof($column); $j < $subarrsize; ++$j) 
-				{	 				
+				for ($j = 0, $subarrsize = sizeof($columns); $j < $subarrsize; ++$j) {	 				
 					$valClassName = ($className == 'diff') ? "maxvalue" : "";
-					if (is_numeric($column[$j][$i])) 
-					{
-						if ($column[$j][$i] < $maxval) 
-						{
+					if (is_numeric($columns[$j][$i])) {
+						if ($columns[$j][$i] < $maxval) {
 							$valClassName = "lowervalue";
 						}
 					}						
-					echo "<td class='value $valClassName'>".number_format($column[$j][$i], 0, '.', ',')."</td>";
+					echo "<td class='value $valClassName'>".number_format($columns[$j][$i], 0, '.', ',')."</td>";
 				} 
 				echo "</tr>";
 			}
 			$rowindex++;
-		}   
-		
+		}   		
 	}
 	
 	function generate_caps_tables($reportids) 
@@ -174,47 +157,39 @@
 		generate_caps_table("SELECT * FROM reports_es20caps WHERE ReportID IN (" . $repids . ")", 2);		
 		
 		$es3 = false;
-		$sqlresult = mysql_query("SELECT ESVERSION_MAJOR FROM reports WHERE ID in (" . $repids . ")"); 
-		while($row = mysql_fetch_row($sqlresult)) 
-		{				
+		$stmnt = DB::$connection->prepare("SELECT ESVERSION_MAJOR FROM reports WHERE ID in (" . $repids . ")");
+		$stmnt->execute();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 			$esversion = $row[0];
-			if ($esversion >= 3) 
-			{
-				//echo "<td class='value'>&nbsp</td>";
+			if ($esversion >= 3) {
 				$es3 = true;
-			} else {
-				//echo "<td class='value' style='color:#FF0000;'>not supported</td>";
 			}
 		}
 		echo "</tr>";
 		
-		if ($es3 == true) {
+		if ($es3) {
 			generate_caps_table("SELECT * FROM reports_es30caps WHERE ReportID IN (" . $repids . ")", 3);		
 		}
 	
 	}
 	
 	function generate_extension_table($reportids, $sql, $checksql, $caption = "Extension") {
-	
-		$sqlresult = mysql_query($sql); 
-		$extcaption = array(); 
-
-		while($row = mysql_fetch_row($sqlresult)) 
-		{	
-			foreach ($row as $data) 
-			{
-				$extcaption[] = $data;	  
+		$extcaptions = array(); 
+		$stmnt = DB::$connection->prepare($sql);
+		$stmnt->execute();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
+			foreach ($row as $data) {
+				$extcaptions[] = $data;	  
 			}
 		}
 
 		$extarray   = array(); 
 		foreach ($reportids as $repid) {
-			$sqlresult = mysql_query($checksql."= $repid"); 
+			$stmnt = DB::$connection->prepare($checksql."= $repid");
+			$stmnt->execute();
 			$subarray = array();
-			while($row = mysql_fetch_row($sqlresult)) 
-			{	
-				foreach ($row as $data) 
-				{
+			while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
+				foreach ($row as $data) {
 					$subarray[] = $data;	  
 				}
 			}
@@ -224,36 +199,31 @@
 		global $devicenames;
         echo "<thead><tr>";
 		echo "<th>".$caption."</th>"; 
-		for ($i = 0; $i < sizeof($devicenames); $i++) 
-		{ 	  
+		for ($i = 0; $i < sizeof($devicenames); $i++) { 	  
 			echo "<th>".$devicenames[$i]."</th>";
 		}
         echo "</tr></thead><tbody>";
         
 		// Extension count 	
 		echo "<tr><td class='value'>count</td>"; 
-		for ($i = 0, $arrsize = sizeof($extarray); $i < $arrsize; ++$i) 
-		{ 	  
+		for ($i = 0, $arrsize = sizeof($extarray); $i < $arrsize; ++$i) { 	  
 			echo "<td class='value'>".count($extarray[$i])."</td>";
 		}
 		echo "</tr>"; 			
 		
 		// Generate table
-		$arrcount = count($extcaption);
-		if ($arrcount > 0) 
-		{
+		$arrcount = count($extcaptions);
+		if ($arrcount > 0) {
 			$colspan = count($reportids) + 1;	
 			$rowindex = 0;
-			foreach ($extcaption as $extension)
-			{			
-				if ($extcaption === '0x0') {
+			foreach ($extcaptions as $extension) {			
+				if ($extcaptions === '0x0') {
 					continue;
 				}
 				// Check if missing in at least one report
 				$missing = false;
 				$index = 0;
-				foreach ($reportids as $repid) 
-				{
+				foreach ($reportids as $repid) {
 					if (!in_array($extension, $extarray[$index])) 
 					{ 
 						$missing = true;
@@ -264,8 +234,7 @@
 				$color = ($missing) ? '#FF0000' : '#000000';		
 				$className = "same";
 				$index = 0;
-				foreach ($reportids as $repid) 
-				{
+				foreach ($reportids as $repid) {
 					if (!in_array($extension, $extarray[$index])) 
 					{ 
 						$className = "diff";
@@ -274,25 +243,15 @@
 				}				
 				$index = 0;
 				echo "<tr class='$className'><td class='fieldcaption'>$extension</td>";		 
-				foreach ($reportids as $repid) 
-				{
-					if (in_array($extension, $extarray[$index])) 
-					{ 
-						echo "<td class='value' style='margin-left:10px;'><span class='glyphicon glyphicon-ok supported'></td>";
-					} 
-					else 
-					{	
-						echo "<td class='value' style='margin-left:10px;'><span class='glyphicon glyphicon-remove unsupported'></td>";
-					}	
+				foreach ($reportids as $repid) {
+					echo "<td class='value' style='margin-left:10px;'><span class='glyphicon ".(in_array($extension, $extarray[$index]) ? "glyphicon-ok supported" : "glyphicon-remove unsupported")."'></td>";
 					$index++;
 				}  
 				$rowindex++;
 			echo "</tr>\n"; 	
 			}
-		}
-	
+		}	
 	}
-
 ?>
     <center>
 
@@ -392,7 +351,10 @@
 
 	</center>
 	
-	<?php include "footer.html"; ?>     
+	<?php 
+		DB::disconnect();
+		include "footer.html"; 
+	?>
 	       
 	<script>
     	$(document).ready(function() 

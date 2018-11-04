@@ -20,27 +20,25 @@
 	*/  
  
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
+	include 'dbconfig.php';	
 	
-	dbConnect();
+	DB::connect();
 
 	function generate_table($sql) {
-
-		$sqlresult = mysql_query($sql);			
-		$column    = array();
-		$captions  = array();
-		while($row = mysql_fetch_row($sqlresult)) {		
+		$stmnt = DB::$connection->prepare($sql);
+		$stmnt->execute();
+		$column = array();
+		$captions = array();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 			$colindex = 0;
 			$reportdata = array();		
 			foreach ($row as $data) {			
 				$reportdata[] = $data;	  
-				$captions[]   = mysql_field_name($sqlresult, $colindex);			
-				if (mysql_field_name($sqlresult, $colindex) == 'device') {
-					$reportdevices[] = $data;
-				}
+				$meta = $stmnt->getColumnMeta($colindex);
+				$captions[] = $meta["name"];
 				$colindex++;
 			} 
-			$column[] = $reportdata; 
+			$column[] = $reportdata;
 		}
 		
 		// Generate table from array
@@ -60,69 +58,19 @@
 		}   
 			
 	}
-	
-	function generate_extension_table($reportids, $sql, $checksql) {
-	
-
-		$sqlresult = mysql_query($sql); 
-		$extcaption = array(); 
-				
-
-		while($row = mysql_fetch_row($sqlresult)) {	
-			foreach ($row as $data) {
-				$extcaption[] = $data;	  
-			}
-		}
-
-		$extarray   = array(); 
-		foreach ($reportids as $repid) {
-			$sqlresult = mysql_query($checksql."= $repid"); 
-			$subarray = array();
-			while($row = mysql_fetch_row($sqlresult)) {	
-					foreach ($row as $data) {
-					$subarray[] = $data;	  
-				}
-			}
-			$extarray[] = $subarray; 
-		}
-		
-		// Generate table
-		$arrcount = count($extcaption);
-		if ($arrcount > 0) {
-			$colspan = count($reportids) + 1;	
-			$rowindex = 0;
-			foreach ($extcaption as $extension){
-				echo "<tr><td class='fieldcaption'>$extension</td>\n";		 
-				$index = 0;
-				foreach ($reportids as $repid) {
-					if (in_array($extension, $extarray[$index])) { 
-						echo "<td class='value' style='margin-left:10px;'><img src='icon_check.png'/ width=16px></td>";
-					} else {
-						echo "<td class='value'></td>";
-					}	
-					$index++;
-				}  
-				$rowindex++;
-			echo "</tr>\n"; 	
-			}
-		} else {
-			echo "<tr><td class='fieldcaption' colspan=$colspan>None</td></tr>\n";		 
-		}
-	}
-	
+			
 	function generate_caps_table($sql, $esversion) {		
-		$sqlresult = mysql_query($sql);	
 		$column    = array();
 		$captions  = array();
-		while($row = mysql_fetch_row($sqlresult)) {		
+		$stmnt = DB::$connection->prepare($sql);
+		$stmnt->execute();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 			$colindex = 0;
 			$reportdata = array();		
 			foreach ($row as $data) {			
 				$reportdata[] = $data;	  
-				$captions[]   = mysql_field_name($sqlresult, $colindex);			
-				if (mysql_field_name($sqlresult, $colindex) == 'device') {
-					$reportdevices[] = $data;
-				}
+				$meta = $stmnt->getColumnMeta($colindex);
+				$captions[] = $meta["name"];
 				$colindex++;
 			} 
 			$column[] = $reportdata; 
@@ -144,15 +92,10 @@
 		
 	}	
 	
-	function generate_list_table($sql, $caption, $linkprefix) {
-	
-		$sqlresult = mysql_query($sql);   
-		$sqlcount = mysql_num_rows($sqlresult);
-		
-//		echo "<TR> <TD class='reporttableheader' colspan=2><b>$caption ($sqlcount)</b> </TD></TR>\n";   			
-		
-		$rowindex = 0;
-		while($row = mysql_fetch_row($sqlresult)) {	
+	function generate_list_table($sql, $caption, $linkprefix) {	
+		$stmnt = DB::$connection->prepare($sql);
+		$stmnt->execute();
+		while($row = $stmnt->fetch(PDO::FETCH_NUM)) {
 			foreach ($row as $data) {
 				echo "<tr>\n";
 				$link = $data;
@@ -161,26 +104,14 @@
 				}
 				echo "<td class='firstcolumn' colspan=2>$link</td>\n";        
 				echo "</tr>";
-				$rowindex++;
 			}
 		}	  	
 	}
     
-    function getCount($sql)
-    {
-        $sqlresult = mysql_query($sql) or die(mysql_error());
-        return mysql_result($sqlresult, 0);    
-    }
-
-    $reportID = (int)mysql_real_escape_string($_GET['id']); 
-    $sqlresult = mysql_query("SELECT description, devicename(device) as device, GL_VERSION, esversion_major, esversion_minor, reportversion, id FROM reports WHERE ID = $reportID");
-    $row = mysql_fetch_array($sqlresult);
-    $sqlcount = mysql_num_rows($sqlresult);   
-	$esversion_major = $row['esversion_major'];    
-	$esversion_minor =  $row['esversion_minor'];
-	$reportversion = $row['reportversion'];
-	
-	if ($sqlcount == 0) {
+	$reportID = (int)($_GET['id']); 
+	$stmnt = DB::$connection->prepare("SELECT description, devicename(device) as device, GL_VERSION, esversion_major, esversion_minor, reportversion, id FROM reports WHERE ID = :reportid");
+	$stmnt->execute(["reportid" => $reportID]);	
+	if ($stmnt->rowCount() == 0) {
 		echo "<center>";
 		?>
 			<div class="alert alert-danger error">
@@ -191,14 +122,20 @@
 		<?php
 		include "footer.html";
 		echo "</center>";
+		DB::disconnect();
 		die();			
 	}	
+
+	$row = $stmnt->fetch(PDO::FETCH_ASSOC);
+	$esversion_major = $row['esversion_major'];    
+	$esversion_minor =  $row['esversion_minor'];
+	$reportversion = $row['reportversion'];
     
-	$sensorCount = getCount("select count(*) from reports_sensors where ReportID = $reportID");       
-    $extCount = getCount("select count(*) from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid = $reportID");
-	$extEglCount = getCount("select count(*) from reports_eglextensions where reportid = $reportID");
-    $featureCount = getCount("select count(*) from reports_devicefeatures Tlookup join devicefeatures Tjoin on Tlookup.DEVICEFEATUREID = Tjoin.id where Tlookup.reportid = $reportID");
-	$compressedformatCount = getCount("select count(*) from reports_compressedformats where reportid = $reportID");
+	$sensorCount = DB::getCount("SELECT count(*) from reports_sensors where ReportID = :reportid", ["reportid" => $reportID]);       
+    $extCount = DB::getCount("SELECT count(*) from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid = :reportid", ["reportid" => $reportID]);
+	$extEglCount = DB::getCount("SELECT count(*) from reports_eglextensions where reportid = :reportid", ["reportid" => $reportID]);
+    $featureCount = DB::getCount("SELECT count(*) from reports_devicefeatures Tlookup join devicefeatures Tjoin on Tlookup.DEVICEFEATUREID = Tjoin.id where Tlookup.reportid = :reportid", ["reportid" => $reportID]);
+	$compressedformatCount = DB::getCount("SELECT count(*) from reports_compressedformats where reportid = :reportid", ["reportid" => $reportID]);
 	   
     echo "<center>";   
     
@@ -297,7 +234,7 @@
 				</thead>
 				<tbody>
 					<?php	
-						generate_list_table("select name from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid = $reportID", 'OpenGL ES Extensions', './listreports.php?extension=');	
+						generate_list_table("SELECT name from reports_extensions rext join extensions ext on rext.extensionid = ext.id where rext.reportid = $reportID", 'OpenGL ES Extensions', './listreports.php?extension=');	
 					?>	
 				</tbody>
 			</table>
@@ -315,7 +252,7 @@
 				<tbody>
 					<?php	
 					generate_list_table(
-						"select name from reports_eglextensions Tlookup join egl_extensions Tjoin on Tlookup.ID = Tjoin.id where Tlookup.reportid = $reportID", 
+						"SELECT name from reports_eglextensions Tlookup join egl_extensions Tjoin on Tlookup.ID = Tjoin.id where Tlookup.reportid = $reportID", 
 						'EGL Extensions', 
 						'./listreports.php?eglextension=');
 					?>		
@@ -335,7 +272,7 @@
 				<tbody>
 				<?php
 					generate_list_table(
-						"select name from reports_compressedformats rcf join compressedformats cf on rcf.compressedformatid = cf.id where rcf.reportid = $reportID and cf.name != '0x0'", 
+						"SELECT name from reports_compressedformats rcf join compressedformats cf on rcf.compressedformatid = cf.id where rcf.reportid = $reportID and cf.name != '0x0'", 
 						'Compressed texture formats', 
 						'./listreports.php?compressedtextureformat=');
 				?>
@@ -357,7 +294,7 @@
 				<tbody>
 					<?php	
 						generate_list_table(
-							"select name from reports_binaryshaderformats rbsf join binaryshaderformats sf on rbsf.binaryshaderformatid = sf.id where rbsf.reportid = $reportID", 
+							"SELECT name from reports_binaryshaderformats rbsf join binaryshaderformats sf on rbsf.binaryshaderformatid = sf.id where rbsf.reportid = $reportID", 
 							'Binary shader formats', '');
 					?>
 				</tbody>
@@ -374,7 +311,7 @@
 				<tbody>
 					<?php	
 						generate_list_table(
-							"select name from reports_binaryprogramformats Tlookup join binaryprogramformats Tjoin on Tlookup.ID = Tjoin.id where Tlookup.reportid = $reportID", 
+							"SELECT name from reports_binaryprogramformats Tlookup join binaryprogramformats Tjoin on Tlookup.ID = Tjoin.id where Tlookup.reportid = $reportID", 
 							'Binary program formats', '');
 					?>
 				</tbody>
@@ -394,11 +331,10 @@
 				</thead>
 				<tbody>
 					<?php
-						$str = "select name,maxrange,resolution from reports_sensors where ReportID = $reportID";  
-						$sqlresult = mysql_query($str);  
+						$stmnt = DB::$connection->prepare("SELECT name,maxrange,resolution from reports_sensors where ReportID = :reportid");
+						$stmnt->execute(["reportid" => $reportID]);
 						$extarray = array();
-						while($row = mysql_fetch_row($sqlresult)) 
-						{	
+						while($row = $stmnt->fetch(PDO::FETCH_NUM)) {	
 							echo "<tr>";
 							echo "<td class='valuezeroleft'>".$row[0]."</td>";
 							echo "<td class='valuezeroleft'>".$row[1]."</td>";
@@ -419,7 +355,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<?php generate_list_table("select devicefeature from reports_devicefeatures Tlookup join devicefeatures Tjoin on Tlookup.DEVICEFEATUREID = Tjoin.id where Tlookup.reportid = $reportID", '', ''); ?>
+					<?php generate_list_table("SELECT devicefeature from reports_devicefeatures Tlookup join devicefeatures Tjoin on Tlookup.DEVICEFEATUREID = Tjoin.id where Tlookup.reportid = $reportID", '', ''); ?>
 				</tbody>
 			</table>
 		</div>
@@ -427,7 +363,7 @@
 	</div>
 
 <?php	
-	dbDisconnect();    
+	DB::disconnect();    
 	include "footer.html";
 ?>     
 
