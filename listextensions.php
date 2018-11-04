@@ -20,8 +20,6 @@
 	*/ 
  
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
-
 	include 'dbconfig.php';	
 	
 	DB::connect();
