@@ -19,7 +19,6 @@
 	*
 	*/
 	include 'header.html';
-	include 'serverconfig/gles_config.php';	
 ?>
 
 <div id='reportdiv'>	   
@@ -36,10 +35,6 @@
 			<h2>Donating</h2>
 			<div>
 				All of my tools and the database itself are free-to-use, open source and hosted by me free of charge, feel free to donate ;)
-			</div>
-			<div>
-				<h3>Flattr</h3>
-				<script id='fbrtvnp'>(function(i){var f,s=document.getElementById(i);f=document.createElement('iframe');f.src='//api.flattr.com/button/view/?uid=swillems&button=compact&url='+encodeURIComponent(document.URL);f.title='Flattr';f.height=20;f.width=110;f.style.borderWidth=0;s.parentNode.insertBefore(f,s);})('fbrtvnp');</script>
 			</div>
 			<div>
 				<h3>PayPal</h3>
