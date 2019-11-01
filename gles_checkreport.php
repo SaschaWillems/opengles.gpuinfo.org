@@ -27,21 +27,6 @@
 	DB::connect();
 
 	$description = $_GET["description"];
-	
-/*
-	$sqlresult = mysql_query("select id from reports where description = '$description'");
-	$sqlcount = mysql_num_rows($sqlresult);   
-	$sqlrow = mysql_fetch_row($sqlresult);
-	
-	if ($sqlcount > 0) {
-		header('HTTP/ 433 report_present '.$sqlrow[0].'');
-		echo "Report for '$description' already present";
-	} else {
-		header('HTTP/ 433 report_new');
-		echo "Report for '$description' is new";
-	}
-*/
-
 	try {
 		$stmnt = DB::$connection->prepare("SELECT id from reports where description = :description");
 		$stmnt->execute(['description' => $description]);	
@@ -57,7 +42,6 @@
 		mail($mailto, "Error while checking for report duplicate", $e->getMessage());
 		header('HTTP/1.0 500 server_error');
 	}
-	mail($mailto, "Report check GLES" , $description);
 	DB::disconnect();
 
 ?>
