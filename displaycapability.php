@@ -3,7 +3,7 @@
 		*
 		* OpenGL ES hardware capability database server implementation
 		*
-		* Copyright (C) 2013-2018 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2013-2021 by Sascha Willems (www.saschawillems.de)
 		*
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
@@ -20,7 +20,8 @@
 	*/ 
  
 	include 'header.html';
-	include 'dbconfig.php';	
+	include 'dbconfig.php';
+	require './includes/chart.php';
 	
 	$name = null;
 	$esversion = 2;
@@ -64,31 +65,29 @@
 		die();		
 	}
 
-?>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>	
-	<script>
-		$(document).ready(function() {
-			var table = $('#extensions').DataTable({
-				"pageLength" : -1,
-				"paging" : false,
-				"stateSave": false, 
-				"searchHighlight" : true,	
-				"dom": '',			
-				"bInfo": false,	
-				"order": [[ 0, "asc" ]]	
-			});
-		} );	
-	</script>
+	// Gather data		
+	$labels = [];
+	$counts = [];
+	DB::connect();
+	$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` > 0 group by 1 order by 2 desc");
+	$result->execute();
+	$rows = $result->fetchAll(PDO::FETCH_ASSOC);
+	foreach ($rows as $row) {
+		$labels[] = $row['value'];
+		$counts[] = $row['reports'];
+	}
+	DB::disconnect();		
 
+?>
 	<div class='header'>
 		<h4 class='headercaption'>Value distribution for <?php echo $name ?> (OpenGL ES <?php echo $major.".".$minor ?>)</h4>
 	</div>
 
 	<center>	
-		<div class='parentdiv'>
+		<div class='chart-div'>
 			<div id="chart"></div>
-			<div class='tablediv' style='width:auto; display: inline-block;'>	
-				<table id="extensions" class="table table-striped table-bordered table-hover reporttable" >
+			<div class='valuelisting'>
+				<table id="caps" class="table table-striped table-bordered table-hover reporttable" >
 					<thead>
 						<tr>				
 							<th>Value</th>
@@ -97,20 +96,16 @@
 					</thead>
 					<tbody>				
 						<?php		
-							DB::connect();			
-							// TODO: Check if name is valid column name (security!)
-							$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` > 0 group by 1 order by 1");
-							$result->execute();
-							$rows = $result->fetchAll(PDO::FETCH_ASSOC);
-							foreach ($rows as $cap) {
-								$link ="listreports.php?capability=$name&esversion=".$esversion."&value=".$cap["value"];
-								echo "<tr>";						
-								echo "<td>".$cap["value"]."</td>";
-								echo "<td><a href='$link'>".$cap["reports"]."</a></td>";
-								echo "</tr>";	    
-							}     
-							DB::disconnect();       			
-						?>   					
+						for ($i = 0; $i < count($labels); $i++) {
+							$color_style = "style='border-left: ".Chart::getColor($i)." 3px solid'";
+							$link ="listreports.php?capability=$name&value=".$labels[$i];
+							$link ="listreports.php?capability=$name&esversion=".$esversion."&value=".$labels[$i];
+							echo "<tr>";						
+							echo "<td $color_style>".$labels[$i]."</td>";
+							echo "<td><a href='$link'>".$counts[$i]."</a></td>";
+							echo "</tr>";	    
+						}
+						?>
 					</tbody>
 				</table> 
 
@@ -119,36 +114,20 @@
 	</center>
 	
     <script type="text/javascript">
-      google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(drawChart);
-      function drawChart() {
-
-		var data = google.visualization.arrayToDataTable([
-			['Value', 'Reports'],
-			<?php 
-				DB::connect();			
-				// TODO: Check if name is valid column name (security!)
-				$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` > 0 group by 1 order by 2 desc");
-				$result->execute();
-				$rows = $result->fetchAll(PDO::FETCH_ASSOC);
-				foreach ($rows as $row) {
-					echo "['".$row['value']."',".$row['reports']."],";
-				}     
-				DB::disconnect();
-			?>		
-		]);
-
-        var options = {
-			legend: { position: 'bottom' },
-			chartArea: { width:"80%", height:"80%" },
-			height: 500,
-			width: 500		  
-        };
-
-        var chart = new google.visualization.PieChart(document.getElementById('chart'));
-
-        chart.draw(data, options);
-	  }
+		$(document).ready(function() {
+			var table = $('#caps').DataTable({
+				"pageLength" : -1,
+				"paging" : false,
+				"stateSave": false, 
+				"searchHighlight" : true,	
+				"dom": '',			
+				"bInfo": false,	
+				"order": [[ 0, "asc" ]]	
+			});
+		} );
+		<?php			
+			Chart::draw($labels, $counts);
+		?>		
 	</script>
 
 	<?php 
