@@ -26,7 +26,7 @@
 		<div class="panel-body" style="margin-left:50px; width:65%px;">    
 			<h2>About this database</h2>
 			<div>
-				Welcome to the public (inofficial) OpenGL ES hardware database, an online tool for developers that want to check out the OpenGL hardware capabilites for the different<br>
+				Welcome to the community-driven OpenGL ES hardware database, an online tool for developers that want to check out the OpenGL hardware capabilites for the different<br>
 				graphics cards, operating systems and driver versions out there.<br><br>
 				This database and the tools to fill it are developed and maintained by me (<a href="http://www.saschawillems.de/" target="_blank">Sascha Willems</a>) in my spare time.<br>
 				No profit is made from this data, nor is this data used in any commercial way and no personal data is transferred, stored or passed.<br><br>
