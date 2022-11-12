@@ -3,7 +3,7 @@
 		*
 		* OpenGL ES hardware capability database server implementation
 		*
-		* Copyright (C) 2011-2018 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2011-2022 by Sascha Willems (www.saschawillems.de)
 		*
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
@@ -178,7 +178,7 @@
                 'renderer' => shorten($device["renderer"], 24),
                 'os' => $device["os"],
                 'date' => $device["date"],
-                'compare' => '<center><input type="checkbox" name="'.$device["id"].'" value="1"></center>'
+                'compare' => '<center><Button onClick="addToCompare('.$device['id'].',\''.shorten($device["name"], 35).'\')">Add</Button>'
             );
         }        
     }

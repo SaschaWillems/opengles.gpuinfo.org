@@ -3,7 +3,7 @@
 		*
 		* OpenGL ES hardware capability database server implementation
 		*
-		* Copyright (C) 2013-2018 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2013-2022 by Sascha Willems (www.saschawillems.de)
 		*
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
@@ -40,8 +40,23 @@
 			break; 
 		}
 	}   
+
+	// Compare from report list (new format)
+	// The URL contains a comma separated list of report ids dot compare
+	// e.g. compare.php/reports=100,200,900
+	if (isset($_REQUEST['reports'])) {
+		$params = explode(',', $_REQUEST['reports']);
+		foreach($params as $param) {
+			if (is_numeric($param)) {
+				$reportids[] = intval($param);
+			}
+		}
+	}	
 	
-	if ($reportlimit) {echo "<b>Note : </b>You selected more than 8 reports to compare, only displaying 8 reports.\n"; }	
+	if ($reportlimit) {
+		echo "<b>Note : </b>You selected more than 8 reports to compare, only displaying 8 reports.\n";
+	}	
+
 	sort($reportids, SORT_NUMERIC);
 
 	// Get device names
