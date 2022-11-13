@@ -18,6 +18,8 @@
 		* PURPOSE.  See the GNU AGPL 3.0 for more details.
 		*
 	*/ 
+
+	session_start();
  
 	include 'header.html';
 	include 'dbconfig.php';	
@@ -29,7 +31,7 @@
 	$devicenames = array();
 	$reportlimit = false;
 
-	// Get checked report IDs
+	// Compare from report list (old format)
 	foreach ($_GET as $k => $v) {
 		if (!is_numeric($k)) 
 			continue;
@@ -51,6 +53,7 @@
 				$reportids[] = intval($param);
 			}
 		}
+		$_SESSION['opengles_compare_reports'] = [];
 	}	
 	
 	if ($reportlimit) {
