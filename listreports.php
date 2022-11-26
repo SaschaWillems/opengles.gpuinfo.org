@@ -1,4 +1,4 @@
- <?php
+<?php
 	/*
 		*
 		* OpenGL ES hardware capability database server implementation
@@ -18,7 +18,7 @@
 		* PURPOSE.  See the GNU AGPL 3.0 for more details.
 		*
 	*/ 
- 
+	
 	session_start();
 
 	include 'header.html';
