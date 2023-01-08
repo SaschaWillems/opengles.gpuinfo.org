@@ -1,18 +1,37 @@
-<!-- OpenGL ES hardware capability database server implementation
+<?php
+/**
+ *
+ * OpenGL ES hardware capability database server implementation
+ *
+ * Copyright (C) 2013-2022 by Sascha Willems (www.saschawillems.de)
+ *
+ * This code is free software, you can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public
+ * License version 3 as published by the Free Software Foundation.
+ *
+ * Please review the following information to ensure the GNU Lesser
+ * General Public License version 3 requirements will be met:
+ * http://www.gnu.org/licenses/agpl-3.0.de.html
+ *
+ * The code is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE.  See the GNU AGPL 3.0 for more details.
+ *
+ */ 
 
-Copyright (C) 2011-2022 by Sascha Willems (www.saschawillems.de)
+session_set_cookie_params(0, '/', '.gpuinfo.org');
+session_name('gpuinfo');
+session_start();
 
-This code is free software, you can redistribute it and/or
-modify it under the terms of the GNU Affero General Public
-License version 3 as published by the Free Software Foundation.
+$data_theme = null;
+$data_theme_icon = 'moon';
+if (($_SESSION['theme']) && ($_SESSION['theme'] == 'dark')) {
+	$data_theme = 'data-theme="dark"';
+	$data_theme_icon = 'sun';
+}
 
-Please review the following information to ensure the GNU Lesser
-General Public License version 3 requirements will be met:
-http://www.gnu.org/licenses/agpl-3.0.de.html
-
-The code is distributed WITHOUT ANY WARRANTY; without even the
-implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the GNU AGPL 3.0 for more details. -->
+?>
+<html <?= $data_theme ?>>
 
 <html>
 <head>
@@ -84,7 +103,7 @@ PURPOSE.  See the GNU AGPL 3.0 for more details. -->
 			<li><a href='./listdevicefeatures.php'>Device features</a></li>	
 			<li><a href='https://play.google.com/store/apps/details?id=de.saschawillems.glescapsviewer' target='_blank'>Download</a></li>			
 			<li><a href="./about.php">About</a></li>
-			<li><a href="#" onclick="toggleDarkMode()" title="Toggle dark/light themes"><img id="mode-toggle" class="mode-toggle" src="./images/moon.svg"/></a> </li>						
+			<li><a href="toggletheme.php" title="Toggle dark/light themes"><img id="mode-toggle" class="mode-toggle" src="./images/<?= $data_theme_icon ?>.svg"/></a> </li>
 		  </ul>
 		  <ul class="nav navbar-nav navbar-right">
 			  <li class="dropdown">
@@ -106,5 +125,3 @@ PURPOSE.  See the GNU AGPL 3.0 for more details. -->
 	  </div>
 	</nav>
 
-	<script type="text/javascript" src="js/darkmode.js"></script>
-	<script>loadDarkMode();</script>

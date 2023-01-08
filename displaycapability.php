@@ -19,7 +19,7 @@
 		*
 	*/ 
  
-	include 'header.html';
+	include 'header.php';
 	include 'dbconfig.php';
 	require './includes/chart.php';
 	
