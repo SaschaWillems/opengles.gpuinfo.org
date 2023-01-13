@@ -481,6 +481,7 @@ a:hover {  text-decoration:none !important; }
 input[type="text"], input[type="search"] {
 	background-color : var(--background-color-input);  
 	border-color: var(--bordercolor);
+	color: inherit;
 }
 
 input::placeholder {
