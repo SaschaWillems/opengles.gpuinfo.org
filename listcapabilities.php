@@ -1,9 +1,9 @@
- <?php
+<?php
 	/*
 		*
 		* OpenGL ES hardware capability database server implementation
 		*
-		* Copyright (C) 2013-2018 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2013-2022 by Sascha Willems (www.saschawillems.de)
 		*
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
