@@ -3,7 +3,7 @@
 		*
 		* OpenGL ES hardware capability database server implementation
 		*
-		* Copyright (C) 2013-2021 by Sascha Willems (www.saschawillems.de)
+		* Copyright (C) 2013-2024 by Sascha Willems (www.saschawillems.de)
 		*
 		* This code is free software, you can redistribute it and/or
 		* modify it under the terms of the GNU Affero General Public
@@ -69,11 +69,11 @@
 	$labels = [];
 	$counts = [];
 	DB::connect();
-	$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` > 0 group by 1 order by 2 desc");
+	$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename  group by 1 order by 2 desc");
 	$result->execute();
 	$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 	foreach ($rows as $row) {
-		$labels[] = $row['value'];
+		$labels[] = ($row['value'] !== null) ? $row['value'] : 'n/a';
 		$counts[] = $row['reports'];
 	}
 	DB::disconnect();		
@@ -97,7 +97,7 @@
 					<tbody>				
 						<?php		
 						for ($i = 0; $i < count($labels); $i++) {
-							$color_style = "style='border-left: ".Chart::getColor($i)." 3px solid'";
+							$color_style = "style='border-left: ".Chart::getColor($i, $labels[$i])." 3px solid'";
 							$link ="listreports.php?capability=$name&value=".$labels[$i];
 							$link ="listreports.php?capability=$name&esversion=".$esversion."&value=".$labels[$i];
 							echo "<tr>";						
