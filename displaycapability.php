@@ -100,12 +100,12 @@
 							$color_style = "style='border-left: ".Chart::getColor($i, $labels[$i])." 3px solid'";
 							$link ="listreports.php?capability=$name&value=".$labels[$i];
 							$link ="listreports.php?capability=$name&esversion=".$esversion."&value=".$labels[$i];
-							echo "<tr>";						
-							echo "<td $color_style>";
+							echo "<tr>";
+							$data_order = $labels[$i];
 							if ($labels[$i] == 'n/a') {
-								// Hidden span with value so column can be sorted
-								echo "<span style='display:none;'>-1</span>";
-								}
+								$data_order = "-1";
+							}
+							echo '<td data-order="'.$data_order.'" '.$color_style.'>';
 							echo $labels[$i];
 							echo "</td>";
 							echo "<td><a href='$link'>".$counts[$i]."</a></td>";
@@ -128,7 +128,7 @@
 				"searchHighlight" : true,	
 				"dom": '',			
 				"bInfo": false,	
-				"order": [[ 0, "asc" ]]	
+				"order": [[ 0, "asc" ]],
 			});
 		} );
 		<?php			
