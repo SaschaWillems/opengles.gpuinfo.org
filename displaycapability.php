@@ -101,7 +101,13 @@
 							$link ="listreports.php?capability=$name&value=".$labels[$i];
 							$link ="listreports.php?capability=$name&esversion=".$esversion."&value=".$labels[$i];
 							echo "<tr>";						
-							echo "<td $color_style>".$labels[$i]."</td>";
+							echo "<td $color_style>";
+							if ($labels[$i] == 'n/a') {
+								// Hidden span with value so column can be sorted
+								echo "<span style='display:none;'>-1</span>";
+								}
+							echo $labels[$i];
+							echo "</td>";
 							echo "<td><a href='$link'>".$counts[$i]."</a></td>";
 							echo "</tr>";	    
 						}
