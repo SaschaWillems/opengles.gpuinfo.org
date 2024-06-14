@@ -69,7 +69,7 @@
 	$labels = [];
 	$counts = [];
 	DB::connect();
-	$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename  group by 1 order by 2 desc");
+	$result = DB::$connection->prepare("SELECT `$name` as value, count(0) as reports from $tablename where `$name` is not null group by 1 order by 2 desc");
 	$result->execute();
 	$rows = $result->fetchAll(PDO::FETCH_ASSOC);
 	foreach ($rows as $row) {
